@@ -1,0 +1,151 @@
+@import (npm) "reveal";
+
+//@import (npm) "codemirror/theme/twilight";
+//@import (npm) "codemirror/lib/codemirror";
+
+.CodeMirror-activeline-background {background: #e8f2ff !important;}
+.CodeMirror-matchingbracket {outline:1px solid grey; color:black !important;}\
+
+.CodeMirror {
+  display: block; padding: 0.5em;
+  color: #333;
+  background: #f8f8f8
+}
+
+span.cm-comment {
+  color: #998;
+  font-style: italic
+}
+span.cm-keyword {
+  color: #333;
+  font-weight: bold
+}
+span.cm-number {
+  color: #099;
+}
+
+span.cm-string {
+  color: #d14
+}
+
+.hljs-id {
+  color: #900;
+  font-weight: bold
+}
+
+.hljs-class .hljs-type {
+  color: #458;
+  font-weight: bold
+}
+
+.hljs-tag,
+.hljs-tag .hljs-title,
+.hljs-rules .hljs-property,
+.django .hljs-tag .hljs-keyword {
+  color: #000080;
+  font-weight: normal
+}
+
+.hljs-attribute,
+.hljs-variable,
+.lisp .hljs-body {
+  color: #008080
+}
+
+.hljs-regexp {
+  color: #009926
+}
+
+.hljs-symbol,
+.ruby .hljs-symbol .hljs-string,
+.lisp .hljs-keyword,
+.tex .hljs-special,
+.hljs-prompt {
+  color: #990073
+}
+
+.hljs-built_in,
+.lisp .hljs-title,
+.clojure .hljs-built_in {
+  color: #0086b3
+}
+
+.hljs-preprocessor,
+.hljs-pragma,
+.hljs-pi,
+.hljs-doctype,
+.hljs-shebang,
+.hljs-cdata {
+  color: #999;
+  font-weight: bold
+}
+
+.hljs-deletion {
+  background: #fdd
+}
+
+.hljs-addition {
+  background: #dfd
+}
+
+.diff .hljs-change {
+  background: #0086b3
+}
+
+.hljs-chunk {
+  color: #aaa
+}
+
+/* Custom styles here */
+
+.reveal .slides>section {
+  padding: 0;
+}
+body {
+  border-top: 12px solid #c00080;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 1.4em;
+  -webkit-transition: border 400ms ease;
+  -moz-transition: border 400ms ease;
+  -ms-transition: border 400ms ease;
+  -o-transition: border 400ms ease;
+  transition: border 400ms ease;
+}
+.reveal pre {
+  font-size: 1.4em;
+  padding: 0.5em;
+}
+.reveal h1, .reveal h2, .reveal h3, .reveal h4 {
+  margin: 0.5em 0;
+}
+.reveal li {
+  margin: 0.2em 0;
+}
+h1 {
+  text-transform: uppercase;
+}
+span.tt {
+  letter-spacing: 0.05em;
+}
+.section-break-slide h2 {
+  text-transform: uppercase;
+  color: white !important;
+  font-size: 4em;
+}
+.section-break .state-background {
+  background: #c00080 !important;
+}
+
+.section-break body {
+  border-top: 12px solid white;
+}
+.reveal .state-background {
+  -webkit-transition: background 400ms ease;
+  -moz-transition: background 400ms ease;
+  -ms-transition: background 400ms ease;
+  -o-transition: background 400ms ease;
+  transition: background 400ms ease;
+}
+.reveal pre > code {
+  padding: 0;
+}

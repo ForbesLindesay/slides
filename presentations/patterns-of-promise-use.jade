@@ -1,0 +1,428 @@
+extends /layout.jade
+block slides
+  section
+    h1
+      |Pa
+      span.tt tt
+      |erns of Promise Use
+    p Forbes Lindesay
+  section
+    h2 What is a callback?
+    :javascript
+      function readJSON(filename, callback) {
+        fs.readFile(filename, 'utf8', function (err, res) {
+          if (err) return callback(err);
+          callback(null, JSON.parse(res));
+        });
+      }
+  section
+    h2 What is a callback?
+    :javascript
+      function readJSON(filename, callback) {
+        fs.readFile(filename, 'utf8', function (err, res) {
+          if (err) return callback(err);
+          try {
+            res = JSON.parse(res);
+          } catch (ex) {
+            return callback(ex);
+          }
+          callback(null, res);
+        });
+      }
+  section
+    h2 What is a promise?
+    ul
+      li.fragment The result of an asynchronous operation
+      li.fragment It can be in one of three states
+        ul
+          li.fragment Pending
+          li.fragment Fulfilled
+          li.fragment Rejected
+  section
+    h2 Creating a Promise
+    :javascript
+      function readFile(filename, enc) {
+        return new Promise(function (fulfill, reject) {
+          fs.readFile(filename, enc, function (err, res) {
+            if (err) reject(err);
+            else fulfill(res);
+          });
+        });
+      }
+  section
+    h2 Getting the value of a Promise
+    :javascript
+      function readJSON(filename) {
+        return new Promise(function (fulfill, reject) {
+          readFile(filename, 'utf8').done(function (res) {
+            try {
+              fulfill(JSON.parse(res));
+            } catch (ex) {
+              reject(ex);
+            }
+          }, reject);
+        });
+      }
+  section
+    h2 Chaining asynchronous operations
+    :javascript
+      function readJSON(filename) {
+        return readFile(filename, 'utf8').then(function (res) {
+          return JSON.parse(res);
+        });
+      }
+
+      readJSON('file.json').done(function (obj) {
+        console.log(obj);
+      }, function (err) {
+        console.log('Error reading file:');
+        throw err;
+      });
+  section
+    h2 What did we gain?
+    ul.icons-ul
+      +good.fragment Avoided conflating the input with the output
+      +good.fragment Composability with less chance of race conditions
+      +good.fragment Implicit error handling
+
+  +sectionbreak('Async.js - Waterfall')
+  section
+    h2 Waterfall
+    :javascript
+      function checkAccess(userID, resource) {
+        var user = getUser(userID);
+        var userPermissions = user.getPermissions();
+        return userPermissions.checkAccess(resource);
+      }
+  section
+    h2 Waterfall
+    :javascript
+      function checkAccess(userID, resource, callback) {
+        getUser(userID, function (err, user) {
+          if (err) return callback(err);
+          user.getPermissions(function (err, userPermissions) {
+            if (err) return callback(err);
+            userPermissions.checkAccess(resource, callback);
+          });
+        });
+      }
+  section
+    h2 Waterfall
+    :javascript
+      function checkAccess(userID, resource, callback) {
+        async.waterfall([
+          function (callback) {
+            getUser(userID, callback);
+          },
+          function (user, callback) {
+            user.getPermissions(callback);
+          },
+          function (userPermissions, callback) {
+            userPermissions.checkAccess(resource, callback);
+          }
+        ], callback);
+      }
+  section
+    h2 Waterfall
+    :javascript
+      function checkAccess(userID, resource) {
+        return getUser(userID).then(function (user) {
+          return user.getPermissions();
+        }).then(function (userPermissions) {
+          return userPermissions.checkAccess(resource);
+        });
+      }
+
+  +sectionbreak('Async.js - Map')
+  section
+    h2 Array.prototype.map
+    :javascript
+      var numbers = [1, 2, 3, 4];
+      var doubled = numbers.map(function double(n) {
+        return n * 2;
+      });
+      // doubled => [2, 4, 6, 8]
+  section
+    h2 Async.map
+    :javascript
+      var numbers = [1, 2, 3, 4];
+      async.map(numbers, function slowDouble(n, callback) {
+        setTimeout(function () {
+          callback(null, n * 2);
+        }, 10000);
+      }, function (err, doubled) {
+        // doubled => [2, 4, 6, 8]
+      });
+  section
+    h2 Map Promises
+    :javascript
+      function slowDouble(n) {
+        return new Promise(function (fulfill) {
+          setTimeout(function () {
+            fulfill(n * 2);
+          }, 10000);
+        });
+      }
+  section
+    h2 Map Promises
+    :javascript
+      var numbers = [1, 2, 3, 4];
+      var promises = numbers.map(slowDouble);
+      // promises => [Promise(2), Promise(4), Promise(6), Promise(8)]
+  section
+    h2 Map Promises
+    :javascript
+      var numbers = [1, 2, 3, 4];
+      var promises = numbers.map(slowDouble);
+      // promises => [Promise(2), Promise(4), Promise(6), Promise(8)]
+      var doubled = promises.reduce(function (accumulator, promise) {
+        return accumulator.then(function (accumulator) {
+          return promise.then(function (value) {
+            accumulator.push(value);
+            return accumulator;
+          });
+      }, Promise.from([]));
+      // doubled => Promise([2, 4, 6, 8])
+  section
+    h2 Promise.all
+    :javascript
+      Promise.all = function (promises) {
+        return promises.reduce(function (accumulator, promise) {
+          return accumulator.then(function (accumulator) {
+            return promise.then(function (value) {
+              accumulator.push(value);
+              return accumulator;
+            });
+        }, Promise.from([]));
+      };
+  section
+    h2 Map using Promise.all
+    :javascript
+      var numbers = [1, 2, 3, 4];
+      var doubled = Promise.all(numbers.map(slowDouble));
+      // doubled => Promise([2, 4, 6, 8])
+
+  +sectionbreak('Throttling')
+  section
+    h2 mapSerial
+    :javascript
+      var numbers = [1, 2, 3, 4];
+      async.mapSerial(numbers, function (n, callback) {
+        setTimeout(function () {
+          callback(null, n * 2);
+        }, 10000);
+      }, function (err, doubled) {
+        // doubled => [2, 4, 6, 8]
+      });
+  section
+    h2 One at a Time
+    :javascript
+      function oneAtATime(fn) {
+        var ready = Promise.from(null);
+        return function () {
+          var args = arguments;
+          var result = ready.then(function () {
+            return fn.apply(null, args);
+          });
+          ready = result.then(null, function () {});
+          return result;
+        };
+      }
+  section
+    h2 mapSerial
+    :javascript
+      var numbers = [1, 2, 3, 4];
+      var doubled = Promise.all(numbers.map(oneAtATime(slowDouble)));
+
+  section
+    h2 mapLimit
+    :javascript
+      var numbers = [1, 2, 3, 4];
+      async.mapLimit(numbers, 2, function (n, callback) {
+        setTimeout(function () {
+          callback(null, n * 2);
+        }, 10000);
+      }, function (err, doubled) {
+        // doubled => [2, 4, 6, 8]
+      });
+  section
+    h2 Limit
+    div(style="font-size: 0.6em;")
+      :javascript
+        function throttle(limit, fn) {
+          var queue = [];
+          function run(self, args) {
+            if (limit) {
+              limit--;
+              var result = fn.apply(self, args);
+              result.done(release, release);
+              return result;
+            } else {
+              return new Promise(function (fulfill) {
+                queue.push({fulfill: fulfill, self: self, args: args})
+              })
+            }
+          }
+          function release() {
+            limit++;
+            if (queue.length) {
+              var next = queue.shift();
+              next.fulfill(run(next.self, next.args));
+            }
+          }
+          return function () {
+            return run(this, arguments);
+          }
+        }
+  section
+    h2 Throat
+    :javascript
+      var throttle = require('throat');
+      var throttled = throttle(4, fn);
+      //now throttled calls fn only 4 times in parallel
+      for (var i = 0; i < 1000; i++) {
+        throttled(i);
+      }
+  section
+    h2 mapSerial / mapLimit
+    :javascript
+      var throat = require('throat');
+      var numbers = [1, 2, 3, 4];
+      var doubledSer = Promise.all(numbers.map(throat(1, slowDouble)));
+      var doubledLim = Promise.all(numbers.map(throat(2, slowDouble)));
+
+  +sectionbreak('Async.js - Filter')
+  section
+    h2 Array.prototype.filter
+    :javascript
+      var files = ['foo.txt', 'bar.txt'];
+      var existing = files.filter(function (n) {
+        return fs.existsSync(n);
+      });
+      // existing => ['foo.txt']
+  section
+    h2 Async.filter
+    :javascript
+      var files = ['foo.txt', 'bar.txt'];
+      async.filter(files, fs.exists, function (existing) {
+        // existing => ['foo.txt']
+      });
+  section
+    h2 Async.filter
+    :javascript
+      var files = ['foo.txt', 'bar.txt'];
+      async.filter(files, function (filename, callback) {
+        fs.exists(filename, function (exists) {
+          callback(exists);
+        });
+      }, function (existing) {
+        // existing => ['foo.txt']
+      });
+
+  section
+    h2 Async.filter
+    :javascript
+      var entries = ['foo.txt', 'bar'];
+      async.filter(entries, function (name, callback) {
+        fs.stat(name, function (err, stat) {
+          if (err) throw err; // WTF!
+          callback(stat.isDirectory());
+        });
+      }, function (directories) {
+        // directories => ['bar']
+      });
+  section
+    h2 Promise Filter
+    :javascript
+      function filter(array, fn) {
+        return Promise.all(array.map(fn)).then(function (filtered) {
+          return array.filter(function (item, index) {
+            return filtered[index];
+          });
+        });
+      }
+  section
+    h2 Promise Filter
+    :javascript
+      var files = ['foo.txt', 'bar.txt'];
+      var existing = filter(files, existsPromise);
+      // existing => Promise(['foo.txt'])
+
+      var entries = ['foo.txt', 'bar'];
+      var directories = filter(files, function (name) {
+        return statPromise(name).then(function (stat) {
+          return stat.isDirectory();
+        });
+      });
+      // directories => Promise(['bar'])
+
+  +sectionbreak('Races')
+  section
+    h2 Promise.race
+    :javascript
+      Promise.race = function (array) {
+        return new Promise(function (fulfill, reject) {
+          array.forEach(function (promise) {
+            promise.done(fulfill, reject);
+          });
+        });
+      };
+  section
+    h2 Some
+    :javascript
+      function some(array, fn) {
+        return new Promise(function (, reject) {
+          var all = array.map(fn).map(function (promise) {
+            return promise.then(function (matches) {
+              if (matches) fulfill(true);
+            });
+          });
+          Promise.all(all).done(function () {
+            fulfill(false);
+          }, reject);
+        });
+      }
+  +sectionbreak('Real World Use')
+  section
+    h2 Express
+    :javascript
+      var express = require('express');
+      var app = express();
+
+      app.use(function (req, res, next) {
+        database.getUser(req.userId).then(function (user) {
+          req.user = user;
+        }).nodeify(next);
+      });
+
+      app.get('/:item', function (req, res, next) {
+        database.getItem(req.params.item).then(function (item) {
+          res.render('item-view', {item: item});
+        }).done(null, next);
+      });
+
+      app.listen(3000);
+  section
+    h2 Mocha
+    :javascript
+      describe('my feature', function () {
+        it('rocks', function (done) {
+          doAwesomeAsync().then(function (res) {
+            assert(res, 'res should be awesome');
+          }).nodeify(done);
+        });
+      });
+  section
+    h2 Mocha As Promised
+    :javascript
+      require('mocha-as-promised');
+      describe('my feature', function () {
+        it('rocks', function () {
+          return doAwesomeAsync().then(function (res) {
+            assert(res, 'res should be awesome');
+          });
+        });
+      });
+  +sectionbreak('Errors')
+  +sectionbreak('Consistent')
+  +sectionbreak('Composable')
