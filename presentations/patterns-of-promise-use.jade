@@ -1,11 +1,6 @@
 extends /layout.jade
 block slides
-  section
-    h1
-      |Pa
-      span.tt tt
-      |erns of Promise Use
-    p Forbes Lindesay
+  +title-slide('Patterns of Promise Use')
   section
     h2 What is a callback?
     :javascript
@@ -85,7 +80,7 @@ block slides
       +good.fragment Composability with less chance of race conditions
       +good.fragment Implicit error handling
 
-  +sectionbreak('Async.js - Waterfall')
+  +section-break('Async.js - Waterfall')
   section
     h2 Waterfall
     :javascript
@@ -133,7 +128,7 @@ block slides
         });
       }
 
-  +sectionbreak('Async.js - Map')
+  +section-break('Async.js - Map')
   section
     h2 Array.prototype.map
     :javascript
@@ -202,7 +197,7 @@ block slides
       var doubled = Promise.all(numbers.map(slowDouble));
       // doubled => Promise([2, 4, 6, 8])
 
-  +sectionbreak('Throttling')
+  +section-break('Throttling')
   section
     h2 mapSerial
     :javascript
@@ -291,7 +286,7 @@ block slides
       var doubledSer = Promise.all(numbers.map(throat(1, slowDouble)));
       var doubledLim = Promise.all(numbers.map(throat(2, slowDouble)));
 
-  +sectionbreak('Async.js - Filter')
+  +section-break('Async.js - Filter')
   section
     h2 Array.prototype.filter
     :javascript
@@ -356,7 +351,7 @@ block slides
       });
       // directories => Promise(['bar'])
 
-  +sectionbreak('Races')
+  +section-break('Races')
   section
     h2 Promise.race
     :javascript
@@ -382,7 +377,7 @@ block slides
           }, reject);
         });
       }
-  +sectionbreak('Real World Use')
+  +section-break('Real World Use')
   section
     h2 Express
     :javascript
@@ -423,6 +418,6 @@ block slides
           });
         });
       });
-  +sectionbreak('Errors')
-  +sectionbreak('Consistent')
-  +sectionbreak('Composable')
+  +section-break('Errors')
+  +section-break('Consistent')
+  +section-break('Composable')

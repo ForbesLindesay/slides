@@ -1,0 +1,283 @@
+extends /layout.jade
+
+block title
+  title Jade
+
+block slides
+  +title-slide('Jade', 'an introduction')
+  section
+    h2 Templating Language
+    ul
+      li Produces HTML
+      li Supports dynamic code
+      li Supports reusability (DRY)
+  section
+    h2 HTML
+    :html
+      <!DOCTYPE html>
+      <html lang="en">
+        <head>
+          <title>Jade</title>
+        </head>
+        <body>
+          <h1>Jade - node template engine</h1>
+          <article>
+            <p>Jade is a terse and simple
+               templating language with a
+               strong focus on performance
+               and powerful features.</p>
+          </article>
+        </body>
+      </html>
+  section
+    h2 HTML
+    :html
+      <!DOCTYPE html>
+      <html lang="en">
+        <head>
+          <title>Jade
+        <body>
+          <h1>Jade - node template engine
+          <article>
+            <p>Jade is a terse and simple
+               templating language with a
+               strong focus on performance
+               and powerful features.
+  section
+    h2 JADE
+    :jade
+      doctype html
+      html(lang="en")
+        head
+          title Jade
+        body
+          h1 Jade - node template engine
+          article
+            p.
+              Jade is a terse and simple
+              templating language with a
+              strong focus on performance
+              and powerful features.
+  +section-break('Produces HTML')
+  section
+    h2 Doctype
+    :jade
+      doctype html
+    :html
+      <!DOCTYPE html>
+    p Deprecated syntax:
+    pre
+      code.cm-s-default.CodeMirror
+        span.cm-meta !!! 5
+  section
+    h2 Tag, attributes & content
+    :jade
+      h1(id="heading-a") Heading A
+    :html
+      <h1 id="heading-a">Heading A</h1>
+  section
+    h2 Text
+    :jade
+      h1 Inside A Tag
+      | On it's own line
+      p.
+        Multi-line inside
+        a tag.
+    :html
+      <h1>Inside A Tag</h1>
+      On it's own line
+      <p>Multi-line insde
+         a tag</p>
+  section
+    h2 Comments
+    :jade
+      // A comement that appears in the output
+      //- A comment that does not appear in the output
+    :html
+      <!-- A comment that appears in the output -->
+    p Deprecated syntax
+    :jade
+      //if IE 8
+  section
+    h2 Inline HTML
+    :html
+      <!--[if IE 8]>
+        <html lang="en" class="lt-ie9">
+      <![endif]-->
+      <!--[if gt IE 8]><!-->
+        <html lang="en">
+      <!--<![endif]-->
+  +section-break('Supports dynamic code')
+  section
+    h2 Buffering Output
+    :jade
+      = jsVariable
+      != jsVariable
+    :javascript
+      var html = jade.render(template, {jsVariable: '<foo>'});
+    :html
+      &lt;foo&gt;
+      <foo>
+  section
+    h2 Buffering Output
+    :javascript
+      function template(locals) {
+        var buf = [], jade_interp;
+        var locals_ = locals || {}, jsVariable = locals_.jsVariable;
+        buf.push(jade.escape(null == (jade_interp = jsVariable) ?
+                             "" : jade_interp)
+              + (null == (jade_interp = jsVariable) ? "" : jade_interp));
+        return buf.join("");
+      }
+  section
+    h2 Interpolatioin
+    :jade
+      p.
+        We would like to welcome \#{name} to this talk
+        with the following snippet of html: \!{html}
+    :javascript
+      var html = jade.render(template, {
+        name: 'Forbes',
+        html: '<strong>welcome</strong>'
+      });
+    :html
+      <p>We would like to welcome Forbes to this talk
+         with the following snippet of html: <strong>welcome</strong></p>
+  section
+    h2 Loops and Conditionals
+    :jade
+      ul
+        each value in list
+          li= value
+      if awesome
+        p You are awesome
+      else
+        p You could use improvement
+    :javascript
+      var html = jade.render(template, {list: [1, 2], awesome: true});
+    :html
+      <ul>
+        <li>1</li>
+        <li>2</li>
+      </ul>
+      <p>You are awesome</p>
+  section
+    h2 Custom JavaScript
+    p (a last resort)
+    :jade
+      ul
+        - list.forEach(function (value) {
+          li= value
+        - });
+    :javascript
+      var html = jade.render(template, {list: [1, 2]});
+    :html
+      <ul>
+        <li>1</li>
+        <li>2</li>
+      </ul>
+  +section-break('Supports reusability (DRY)')
+  section
+    h2 Includes
+    p The simplest way to re-use code
+    :jade
+      //- root.jade
+      article
+        include ./child.jade
+    :jade
+      //- child.jade
+      h2 An Article
+      p Blah Blah Blah
+    :javascript
+      var html = jade.renderFile('root.jade');
+    :html
+      <h2>An Article</h2>
+      <p>Blah Blah Blah</p>
+  section
+    h2 Mixins
+    p Re-use blocks with an adjustment
+    :jade
+      mixin article(name, body)
+        h2= name
+        p= body
+      +article('A1', 'The first article')
+      +article('A2', 'The second article')
+    :html
+      <h2>A1</h2>
+      <p>The first article</p>
+      <h2>A2</h2>
+      <p>The second article</p>
+  section
+    h2 Inheritance
+    :jade
+      //- base.jade
+      doctype html
+      html
+        head
+          block title
+            title Default Title
+        body
+          block content
+    :jade
+      //- article.jade
+      extends ./base.jade
+
+      block title
+        title My Article Title
+
+      block content
+        p An epic article
+  section
+    h2 Inheritance
+    :html
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>My Article Title</title>
+        </head>
+        <body>
+          <p>An epic article</p>
+        </body>
+      </html>
+  section
+    h2 Inheritance - Multi Level
+
+    :jade
+      //- authenticated.jade
+      extends ./base.jade
+
+      block title
+        title Authenticated
+
+    :jade
+      //- anonymous.jade
+      extends ./base.jade
+
+      block title
+        title Anonymous
+  +section-break('Final Thoughts')
+  section
+    h2 Express.js
+    :javascript
+      var express = require('express');
+      var app = express();
+      app.get('/', function (req, res) {
+        res.render('home.jade', {title: 'Home Page'});
+      });
+      app.listen(3000);
+  section
+    h2 Jade Compiler
+    p The jade compiler is well designed, and consists of three stages
+    ul
+      li Lexer - takes jade in and generates a stream of tokens
+      li Parser - takes a stream of tokens and generates an abstract syntax tree
+      li Compiler - takes an abstract syntax tree and generates JavaScript
+  section
+    h2 Tooling
+    p Jade's tooling is now very high up on my list of priorities
+    ul
+      li jade-lang.com - documentation and in-browser editor
+      li brackets plugin - robust syntax highlighter and code-mirror mode
+      li sublime text plugin - passable syntax highlighter
+      li command line build tool
+      li node.js API

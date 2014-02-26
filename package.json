@@ -1,0 +1,13 @@
+{
+  "name": "slides",
+  "version": "0.0.0",
+  "description": "Slides for talks I've given",
+  "keywords": [],
+  "dependencies": {
+    "jade-highlighter": "~1.0.5"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ForbesLindesay/slides.git"
+  }
+}

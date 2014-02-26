@@ -1,5 +1,5 @@
 @import (npm) "reveal";
-
+@import "./inconsolata/inconsolata.less";
 //@import (npm) "codemirror/theme/twilight";
 //@import (npm) "codemirror/lib/codemirror";
 
@@ -16,17 +16,32 @@ span.cm-comment {
   color: #998;
   font-style: italic
 }
-span.cm-keyword {
+span.cm-keyword, span.cm-atom {
   color: #333;
-  font-weight: bold
+  font-weight: bold;
 }
 span.cm-number {
   color: #099;
 }
 
 span.cm-string {
-  color: #d14
+  color: #d14;
 }
+
+span.cm-meta {
+  color: #999;
+  font-weight: bold
+}
+
+span.cm-tag {
+  color: #000080;
+  font-weight: normal
+}
+
+span.cm-attribute {
+  color: #008080
+}
+
 
 .hljs-id {
   color: #900;
@@ -36,20 +51,6 @@ span.cm-string {
 .hljs-class .hljs-type {
   color: #458;
   font-weight: bold
-}
-
-.hljs-tag,
-.hljs-tag .hljs-title,
-.hljs-rules .hljs-property,
-.django .hljs-tag .hljs-keyword {
-  color: #000080;
-  font-weight: normal
-}
-
-.hljs-attribute,
-.hljs-variable,
-.lisp .hljs-body {
-  color: #008080
 }
 
 .hljs-regexp {
@@ -62,22 +63,6 @@ span.cm-string {
 .tex .hljs-special,
 .hljs-prompt {
   color: #990073
-}
-
-.hljs-built_in,
-.lisp .hljs-title,
-.clojure .hljs-built_in {
-  color: #0086b3
-}
-
-.hljs-preprocessor,
-.hljs-pragma,
-.hljs-pi,
-.hljs-doctype,
-.hljs-shebang,
-.hljs-cdata {
-  color: #999;
-  font-weight: bold
 }
 
 .hljs-deletion {

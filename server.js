@@ -15,11 +15,28 @@ var writeFile = Promise.denodeify(fs.writeFile, 3);
 
 
 var CodeMirror = require('highlight-codemirror');
+var jadeHighlight = require('jade-highlighter');
 
 CodeMirror.loadMode('javascript');
+CodeMirror.loadMode('css');
+CodeMirror.loadMode('htmlmixed');
 
 jade.filters.javascript = function (src) {
-  return '<pre class="cm-s-default CodeMirror"><code>' + CodeMirror.highlight(src, {name: 'javascript'}) + '</code></pre>'
+  return '<pre class="cm-s-default CodeMirror"><code>'
+  + CodeMirror.highlight(src, {name: 'javascript'})
+  + '</code></pre>'
+}
+
+jade.filters.jade = function (src) {
+  return '<pre class="cm-s-default CodeMirror"><code>'
+  + jadeHighlight(src, {})
+  + '</code></pre>'
+}
+
+jade.filters.html = function (src) {
+  return '<pre class="cm-s-default CodeMirror"><code>'
+  + CodeMirror.highlight(src, {name: 'htmlmixed'})
+  + '</code></pre>'
 }
 
 function browserify(file, opts) {
@@ -34,7 +51,7 @@ function browserify(file, opts) {
 }
 
 function compile() {
-  var presentations = fs.readdirSync(__dirname + '/presentations')
+  var presentations = Promise.all(fs.readdirSync(__dirname + '/presentations')
   .map(function (presentation) {
     var source = path.join(__dirname, 'presentations', presentation);
     var dest = path.join(__dirname, 'output', presentation.replace(/\.jade$/, ''),
@@ -46,7 +63,7 @@ function compile() {
     return Promise.all(dir, html).then(function (res) {
       return writeFile(dest, res[1]);
     });
-  });
+  }));
   var css = less.toDisc(__dirname + '/index.less', __dirname + '/output/index.css');
   var js = browserify(__dirname + '/index.js', {debug: false}).then(function (res) {
     return writeFile(__dirname + '/output/index.js', res);
@@ -67,6 +84,7 @@ function checkCompiled() {
   });
   return compiled;
 }
+checkCompiled().done();
 
 
 var http = require('http');
