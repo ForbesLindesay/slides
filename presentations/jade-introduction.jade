@@ -72,9 +72,15 @@ block slides
   section
     h2 Tag, attributes & content
     :jade
-      h1(id="heading-a") Heading A
+      h1(id="heading-a" class="title") Heading A
     :html
-      <h1 id="heading-a">Heading A</h1>
+      <h1 id="heading-a" class="title">Heading A</h1>
+  section
+    h2 ID and Class shorthand
+    :jade
+      h1#heading-a.title Heading A
+    :html
+      <h1 id="heading-a" class="title">Heading A</h1>
   section
     h2 Text
     :jade
@@ -129,6 +135,14 @@ block slides
               + (null == (jade_interp = jsVariable) ? "" : jade_interp));
         return buf.join("");
       }
+  section
+    h2 Dynamic Attributes
+    :jade
+      a(href="mailto:" + email)= email
+    :javascript
+      var html = jade.render(template, {email:'forbes@lindesay.co.uk'});
+    :html
+      <a href="mailto:forbes@lindesay.co.uk">forbes@lindesay.co.uk</a>
   section
     h2 Interpolatioin
     :jade
@@ -191,22 +205,49 @@ block slides
     :javascript
       var html = jade.renderFile('root.jade');
     :html
-      <h2>An Article</h2>
-      <p>Blah Blah Blah</p>
+      <article>
+        <h2>An Article</h2>
+        <p>Blah Blah Blah</p>
+      </article>
   section
     h2 Mixins
     p Re-use blocks with an adjustment
     :jade
       mixin article(name, body)
-        h2= name
-        p= body
+        article
+          h2= name
+          p= body
       +article('A1', 'The first article')
       +article('A2', 'The second article')
     :html
-      <h2>A1</h2>
-      <p>The first article</p>
-      <h2>A2</h2>
-      <p>The second article</p>
+      <article>
+        <h2>A1</h2>
+        <p>The first article</p>
+      </article>
+      <article>
+        <h2>A2</h2>
+        <p>The second article</p>
+      </article>
+  section
+    h2 Mixins with bodies
+    :jade
+      mixin article(name)
+        article
+          h2= name
+          block
+      +article('A1')
+        p The first article
+      +article('A2')
+        p The second article
+    :html
+      <article>
+        <h2>A1</h2>
+        <p>The first article</p>
+      </article>
+      <article>
+        <h2>A2</h2>
+        <p>The second article</p>
+      </article>
   section
     h2 Inheritance
     :jade
@@ -255,6 +296,45 @@ block slides
 
       block title
         title Anonymous
+  section
+    h2 Filters
+    :jade
+      :markdown
+        # Heading 1
+        
+        Paragraph of text
+    :html
+      <h1>Heading 1</h1>
+      <p>Paragraph of text</p>
+  +section-break('Jade API')
+  section
+    h2 Compile / Compile Client
+    :javascript
+      var jade = require('jade');
+
+      var fn = jade.compile('h1= name');
+      var html = fn({name: 'Forbes Lindesay'});
+      // => <h1>Forbes Lindesay</h1>
+      var src = jade.compileClient('h1= name');
+      // => a function called `template`
+    :jade
+      script(src="node_modules/jade/runtime.js")
+      script(src="template.js")
+      script.
+        var html = template({name: 'Forbes Lindesay'});
+  section
+    h2 Render
+    :javascript
+      var html = jade.render('h1= name', {name: 'Forbes Lindesay'});
+      // => <h1>Forbes Lindesay</h1>
+  section
+    h2 Render File
+    :jade
+      //- input.jade
+      h1= name
+    :javascript
+      var html = jade.renderFile('input.jade', {name: 'Forbes Lindesay'});
+      // => <h1>Forbes Lindesay</h1>
   +section-break('Final Thoughts')
   section
     h2 Express.js
