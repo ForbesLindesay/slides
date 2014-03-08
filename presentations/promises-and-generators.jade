@@ -1,0 +1,417 @@
+extends /layout.jade
+block slides
+  +title-slide('Promises & Generators', 'Control Flow Utopia')
+  +section-break('Sequences')
+  section
+    h2 Sequence 1
+    :javascript
+      function count(n){
+        var res = []
+        for (var x = 0; x < n; x++) {
+          res.push(x)
+        }
+        return res
+      }
+
+      for (var x of count(5)) {
+        console.log(x)
+      }
+
+  section
+    h2 Sequence 2
+    :javascript
+      function count(){
+        var res = []
+        for (var x = 0; true; x++) {
+          res.push(x)
+        }
+        return res
+      }
+
+      for (var x of count()) {
+        console.log(x)
+      }
+
+  section
+    h2 Sequence 3
+    :javascript
+      function* count(){
+        for (var x = 0; true; x++) {
+          yield x
+        }
+      }
+
+      for (var x of count()) {
+        console.log(x)
+      }
+  section
+    h2 Take
+    :javascript
+      function* take(list, n){
+        var i = 0
+        for (var x of list) {
+          if (n === i++) {
+            return
+          }
+          yield x
+        }
+      }
+
+      for (var x of take(count(), 5)) {
+        console.log(x)
+      }
+  +section-break('async')
+  section
+    h2 Sync JSON
+    :javascript
+      function readJSONSync(filename){
+        return JSON.parse(fs.readFileSync(filename, 'utf8'))
+      }
+  section
+    h2 Async JSON 1
+    :javascript
+      function readJSON(filename, callback){
+        fs.readFile(filename, 'utf8', function (err, res){
+          if (err) return callback(err)
+          callback(null, JSON.parse(res))
+        })
+      }
+    ul.icons-ul
+      +bad.fragment Conflates the input with the output
+      +bad.fragment Doesn't work with control flow primatives
+      +bad.fragment Doesnt handle errors
+  section
+    h2 Async JSON 2
+    :javascript
+      function readJSON(filename, callback){
+        fs.readFile(filename, 'utf8', function (err, res){
+          if (err) return callback(err)
+          try {
+            callback(null, JSON.parse(res))
+          } catch (ex) {
+            callback(ex)
+          }
+        })
+      }
+    ul.icons-ul
+      +bad.fragment Conflates the input with the output
+      +bad.fragment Doesn't work with control flow primatives
+      +good.fragment handles errors in <code>JSON.parse</code>
+      +bad.fragment Double handles errors in the callback
+
+  section
+    h2 Async JSON 2
+    :javascript
+      function readJSON(filename, callback){
+        fs.readFile(filename, 'utf8', function (err, res){
+          if (err) return callback(err)
+          try {
+            callback(null, JSON.parse(res))
+          } catch (ex) {
+            callback(ex)
+          }
+        })
+      }
+    :javascript
+      var n = 0
+      readJSON(filename, function (err, res){
+        throw new ('Unerlated error ' + (n++))
+      })
+
+  section
+    h2 Async JSON 3
+    :javascript
+      function readJSON(filename, callback){
+        fs.readFile(filename, 'utf8', function (err, res){
+          if (err) return callback(err)
+          try {
+            res = JSON.parse(res)
+          } catch (ex) {
+            return callback(ex)
+          }
+          callback(null, res)
+        })
+      }
+    ul.icons-ul
+      +bad.fragment Conflates the input with the output
+      +bad.fragment Doesn't work with control flow primatives
+      +good.fragment But it does handle errors
+  section
+    h2 Sync JSON
+    :javascript
+      function readJSONSync(filename){
+        return JSON.parse(fs.readFileSync(filename, 'utf8'))
+      }
+  +section-break('Imagine')
+    ul
+      li.fragment Asynchronous methods still return values
+      li.fragment The values cannot be used directly
+      li.fragment The values can be awaited
+  section
+    h2 Promise
+    ul
+      li A promise represents the result of an asynchronous operation
+      li A promise can be pending, fulfilled or rejected
+    :javascript
+      function readFile(filename, enc){
+        return new Promise(function (fulfill, reject){
+          fs.readFile(filename, enc, function (err, res){
+            if (err) reject(err)
+            else fullfill(res)
+          })
+        })
+      }
+  section
+    h2 Promise JSON A
+    :javascript
+      function readJSON(filename){
+        return new Promise(function (fulfill, reject){
+          readFile(filename, 'utf8').done(function (res){
+            try {
+              fullfill(JSON.parse(res))
+            } catch (ex) {
+              reject(ex)
+            }
+          }, reject)
+        })
+      }
+    ul.icons-ul
+      +good.fragment Doesn't conflate input with output
+      +bad.fragment Doesn't work with control flow primatives
+      +bad.fragment Requires extra work to handle errors
+  section.large-text
+    p <code>.then</code> is to <code>.done</code>
+    p as
+    p <code>.map</code> is to <code>.forEach</code>
+  section
+    h2 Promise JSON B
+    :javascript
+      function readJSON(filename){
+        return readFile(filename, 'utf8').then(function (res){
+          return JSON.parse(res)
+        })
+      }
+    .fragment
+      :javascript
+        function readJSON(filename){
+          return readFile(filename, 'utf8').then(JSON.parse)
+        }
+    ul.icons-ul
+      +good.fragment Doesn't conflate input with output
+      +bad.fragment Doesn't work with control flow primatives
+      +good.fragment Handles errors
+  +section-break('generators')
+    p What if yield could be used to "await" a promise
+  section
+    h2 Generator JSON
+    .fragment
+      :javascript
+        var readJSONSync = function (filename){
+          return JSON.parse(fs.readFileSync(filename, 'utf8'))
+        }
+        var readJSON = async(function *(filename){
+          return JSON.parse(yield readFile(filename, 'utf8'))
+        })
+    ul.icons-ul
+      +good.fragment Doesn't conflate input with output
+      +good.fragment Works with control flow primatives
+      +good.fragment Handles errors
+      +good.fragment Looks Asynchronous
+
+  section
+    h2 A sequence of operations
+    :javascript
+      var get = async(function *(){
+        var left = yield readJSON('left.json')
+        var right = yield readJSON('right.json')
+        return {left: left, right: right}
+      })
+
+  section
+    h2 Parallel operations
+    :javascript
+      var get = async(function *(){
+        var left = readJSON('left.json')
+        var right = readJSON('right.json')
+        return {left: yield left, right: yield right}
+      })
+
+  section
+    h2 Try/Catch
+    :javascript
+      var tryGet = async(function *(key, defaultValue){
+        var result
+        try {
+          result = yield get(key)
+        } catch (ex) {
+          result = defaultValue
+        }
+        return result
+      })
+
+  section
+    h2 For
+    :javascript
+      var uploadDocuments = async(function *(documents){
+        for (var document of documents) {
+          yield upload(document)
+        }
+      })
+    .fragment
+      :javascript
+        var uploadDocumentsParallel = async(function *(documents){
+          var operations = []
+          for (var document of documents) {
+            operations.push(upload(document))
+          }
+          for (var operation of operations) {
+            yield operation
+          }
+        })
+  section
+    h2 How it works - Fulfilling
+    ul
+      li <code>yield foo</code> is an expression
+      li.fragment A generator can be manually operated via <code>.next(value)</code>
+    .fragment
+      :javascript
+        function* demo() {
+          var res = yield 10
+          assert(res === 32)
+          return 42
+        }
+    .fragment
+      :javascript
+        var d = demo()
+        var resA = d.next()
+        // => {value: 10, done: false}
+        var resB = d.next(32)
+        // => {value: 42, done: true}
+        // d.next() - THROWS!!!
+  section
+    h2 How it works - rejecting
+    ul
+      li A generator can be sent an exception via <code>.throw(error)</code>
+    .fragment
+      :javascript
+        var sentinel = new Error('foo')
+        function* demo() {
+          try {
+            yield 10
+          } catch (ex) {
+            assert(ex === sentinel)
+          }
+        }
+    .fragment
+      :javascript
+        var d = demo()
+        d.next()
+        // => {value: 10, done: false}
+        d.throw(sentinel)
+  section
+    h2 Putting it all together
+    .small-code
+      :javascript
+        function async(makeGenerator){
+          return function (){
+            var generator = makeGenerator.apply(this, arguments)
+
+            function handle(result){ // { done: [Boolean], value: [Object] }
+              if (result.done) return result.value
+
+              return result.value.then(function (res){
+                return handle(generator.next(res))
+              }, function (err){
+                return handle(generator.throw(err))
+              })
+            }
+
+            return handle(generator.next())
+          }
+        }
+  +section-break('Why Promises?')
+  section
+    h2 Streamline
+    :javascript
+      function readJSON(filename, _){
+        return JSON.parse(fs.readFile(filename, 'utf8', _))
+      }
+    ul.icons-ul
+      +good.fragment Works with control flow primatives
+      +good.fragment Handles errors
+      +bad.fragment Conflates input with output
+      +bad.fragment Looks entirely synchronous
+      +bad.fragment Compiles to pretty ugly code
+  section
+    h2 Suspend
+    .medium-code
+      :javascript
+        suspend(function *(resume){
+          return JSON.parse(yield fs.readFile(filename, 'utf8', resume))
+        })
+    ul.icons-ul
+      +good.fragment Works with control flow primatives
+      +good.fragment Handles errors
+      +bad.fragment Conflates input with output
+      +bad.fragment Isn't doing what it looks like
+      +bad.fragment Can't do parallel operation
+  section
+    h2 CO
+    :javascript
+      function readFile(filename, encoding){
+        return function (callback){
+          return fs.readFile(filename, encoding, callback)
+        }
+      }
+      co(function *(){
+        return JSON.parse(yield readFile(filename, 'utf8'))
+      })
+    ul.icons-ul
+      +good.fragment Works with control flow primatives
+      +good.fragment Handles errors
+      +bad.fragment Can't do parallel operation
+      +bad.fragment Can't share and cache async operations
+  +section-break('conclusions')
+  section
+    h2 Conclusion A
+    p Promises let us turn
+    .small-code
+      :javascript
+        function readJSON(filename, callback){
+          fs.readFile(filename, 'utf8', function (err, res){
+            if (err) return callback(err)
+            try {
+              res = JSON.parse(res)
+            } catch (ex) {
+              return callback(ex)
+            }
+            callback(null, res)
+          })
+        }
+    p INTO
+    .fragment.small-code
+      :javascript
+        function readJSON(filename){
+          return readFile(filename, 'utf8').then(JSON.parse)
+        }
+
+  section
+    h2 Conclusion B
+    p Generators let us turn
+    .small-code
+      :javascript
+        function get(){
+          return readJSON('left.json').then(function (left){
+            return readJSON('right.json').then(function (right){
+              return {left: left, right: right}
+            })
+          })
+        }
+    p INTO
+    .fragment.small-code
+      :javascript
+        var get = async(function *(){
+          var left = yield readJSON('left.json')
+          var right = yield readJSON('right.json')
+          return {left: left, right: right}
+        })

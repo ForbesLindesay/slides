@@ -2,16 +2,17 @@ extends ./base.jade
 
 block content
   mixin bad()
-    li(attributes)
+    li&attributes(attributes)
       i.icon-remove
       block
   mixin good()
-    li(attributes)
+    li&attributes(attributes)
       i.icon-ok
       block
   mixin section-break(title)
     section.section-break-slide(data-state="section-break")
       h2!= jade.escape(title).replace(/tt/g, '<span class="tt">tt</span>')
+      block
   mixin title-slide(title, subtitle, tag)
     section
       h1!= jade.escape(title).replace(/tt/g, '<span class="tt">tt</span>')

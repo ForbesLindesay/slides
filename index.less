@@ -1,5 +1,6 @@
 @import (npm) "reveal";
 @import "./inconsolata/inconsolata.less";
+@import (less) "./font-awesome/css/index.css";
 //@import (npm) "codemirror/theme/twilight";
 //@import (npm) "codemirror/lib/codemirror";
 
@@ -117,6 +118,11 @@ span.tt {
   color: white !important;
   font-size: 4em;
 }
+.section-break-slide li, .section-break p {
+  color: white !important;
+  font-size: 2em;
+  line-height: 1.5em;
+}
 .section-break .state-background {
   background: #c00080 !important;
 }
@@ -133,4 +139,11 @@ span.tt {
 }
 .reveal pre > code {
   padding: 0;
+}
+
+.reveal .large-text {
+  font-size: 2em;
+}
+.reveal .small-code {
+  font-size: 0.85em;
 }
