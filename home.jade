@@ -1,0 +1,13 @@
+extends ./base.jade
+
+block content
+  .container
+    h1 Forbes Lindesay - Slides
+    p This page collects all the slides for software related presentations I've given.
+    mixin talk(id, title)
+      li
+        a(href='/' + id)= title
+    ul
+      +talk('promises-and-generators', 'Promises & Generators - Control Flow Utopia')
+      +talk('patterns-of-promise-use', 'Patterns of Promise Use')
+      +talk('jade-introduction', 'Jade - An Introduction')

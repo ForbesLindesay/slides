@@ -49,26 +49,30 @@ function browserify(file, opts) {
     });
   });
 }
-
+function compileJade(source, dest) {
+  var dir = mkdirp(path.dirname(dest));
+  var html = readFile(source).then(function (res) {
+    return jade.render(res.toString(), {filename: source, basedir: __dirname});
+  });
+  return Promise.all(dir, html).then(function (res) {
+    return writeFile(dest, res[1]);
+  });
+}
 function compile() {
   var presentations = Promise.all(fs.readdirSync(__dirname + '/presentations')
   .map(function (presentation) {
     var source = path.join(__dirname, 'presentations', presentation);
     var dest = path.join(__dirname, 'output', presentation.replace(/\.jade$/, ''),
                          'index.html');
-    var dir = mkdirp(path.dirname(dest));
-    var html = readFile(source).then(function (res) {
-      return jade.render(res.toString(), {filename: source, basedir: __dirname});
-    });
-    return Promise.all(dir, html).then(function (res) {
-      return writeFile(dest, res[1]);
-    });
+    return compileJade(source, dest);
   }));
   var css = less.toDisc(__dirname + '/index.less', __dirname + '/output/index.css');
   var js = browserify(__dirname + '/index.js', {debug: false}).then(function (res) {
     return writeFile(__dirname + '/output/index.js', res);
   });
-  return Promise.all(presentations, css, js);
+  return Promise.all(presentations, css, js, compileJade(
+    __dirname + '/home.jade',
+    __dirname + '/output/index.html'));
 }
 
 var compiled = null;
