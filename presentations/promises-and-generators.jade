@@ -119,7 +119,7 @@ block slides
     :javascript
       var n = 0
       readJSON(filename, function (err, res){
-        throw new ('Unerlated error ' + (n++))
+        throw new Error('Unerlated error ' + (n++))
       })
 
   section
@@ -204,6 +204,23 @@ block slides
       +good.fragment Doesn't conflate input with output
       +bad.fragment Doesn't work with control flow primatives
       +good.fragment Handles errors
+  section
+    h2 Prollyfill #[code .done]
+    :javascript
+      if (!Promise.prototype.done) {
+        Promise.prototype.done = function (cb, eb) {
+          this.then(cb, eb).then(null, function (err) {
+            setTimeout(function () {
+              throw err
+            }, 0)
+          })
+        }
+      }
+  section
+    h2 github.com/then/promise
+    pre: code npm install promise
+    :javascript
+      var Promise = require('promise')
   +section-break('generators')
     p What if yield could be used to "await" a promise
   section
@@ -243,14 +260,15 @@ block slides
   section
     h2 Try/Catch
     :javascript
-      var tryGet = async(function *(key, defaultValue){
-        var result
+      var readLog = async(function *(filename){
         try {
-          result = yield get(key)
+          var result = yield readJSON(filename)
+          return result
         } catch (ex) {
-          result = defaultValue
+          console.error('error reading ' + filename)
+          console.error(ex)
+          throw ex
         }
-        return result
       })
 
   section
@@ -333,6 +351,11 @@ block slides
             return handle(generator.next())
           }
         }
+  section
+    h2 github.com/then/yield
+    pre: code npm install then-yield
+    :javascript
+      var async = require('then-yield').async
   +section-break('Why Promises?')
   section
     h2 Streamline
