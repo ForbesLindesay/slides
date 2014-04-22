@@ -19,6 +19,7 @@ var jadeHighlight = require('jade-highlighter');
 
 CodeMirror.loadMode('javascript');
 CodeMirror.loadMode('css');
+CodeMirror.loadMode('xml');
 CodeMirror.loadMode('htmlmixed');
 
 jade.filters.javascript = function (src) {
