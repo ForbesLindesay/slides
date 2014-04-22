@@ -89,18 +89,23 @@ function checkCompiled() {
   });
   return compiled;
 }
-checkCompiled().done();
 
-
-var http = require('http');
-var ecstatic = require('ecstatic');
-var serve = ecstatic({root: __dirname + '/output'});
-http.createServer(function (req, res) {
+if (process.argv[2] === 'build') {
   checkCompiled().done(function () {
-    serve(req, res);
-  }, function (err) {
-    console.error(err.stack || err.message || err);
-    res.statusCode = 500;
-    res.end((err.stack || err.message || err) + '');
+    console.log('all files compiled');
   });
-}).listen(3000);
+} else {
+  var http = require('http');
+  var ecstatic = require('ecstatic');
+  var serve = ecstatic({root: __dirname + '/output'});
+  http.createServer(function (req, res) {
+    checkCompiled().done(function () {
+      serve(req, res);
+    }, function (err) {
+      console.error(err.stack || err.message || err);
+      res.statusCode = 500;
+      res.end((err.stack || err.message || err) + '');
+    });
+  }).listen(3000);
+  console.log('listening on localhost:3000');
+}

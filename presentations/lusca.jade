@@ -22,7 +22,10 @@ block slides
       app.use(lusca({
           csrf: true,
           csp: {
-            policy: { 'script-src': '*' },
+            policy: {
+              'default-src': 'none',
+              'script-src': '\'self\' https://apis.google.com'
+            },
             reportUri: '/report-violation'
           },
           xframe: 'SAMEORIGIN',
@@ -40,7 +43,10 @@ block slides
 
       app.use(lusca.csrf());
       app.use(lusca.csp({
-        policy: { 'script-src': '*' },
+        policy: {
+          'default-src': 'none',
+          'script-src': '\'self\' https://apis.google.com'
+        },
         reportUri: '/report-violation'
       }));
       app.use(lusca.xframe('SAMEORIGIN'));

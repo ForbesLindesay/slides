@@ -17,5 +17,13 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/ForbesLindesay/slides.git"
+  },
+  "scripts": {
+    "prerelease": "rimraf output",
+    "release": "node server build && mandate"
+  },
+  "devDependencies": {
+    "rimraf": "^2.2.6",
+    "mandate": "^1.0.1"
   }
 }
