@@ -1,0 +1,88 @@
+extends /layout.jade
+
+block title
+  title lusca
+
+block slides
+  +title-slide('lusca', 'Web application security middleware for node.js')
+  section
+    h2 Express
+    ul
+      li The most popular web application framework for node.js
+      li Comes with very few security features as standard
+      li Used by paypal
+  section
+    h2 Express
+    :javascript
+      var express = require('express');
+      var lusca = require('lusca');
+
+      var app = express();
+
+      app.use(lusca({
+          csrf: true,
+          csp: {
+            policy: { 'script-src': '*' },
+            reportUri: '/report-violation'
+          },
+          xframe: 'SAMEORIGIN',
+          hsts: {maxAge: 31536000, includeSubDomains: true},
+          xssProtection: true
+      }));
+
+  section
+    h2 Express
+    :javascript
+      var express = require('express');
+      var lusca = require('lusca');
+
+      var app = express();
+
+      app.use(lusca.csrf());
+      app.use(lusca.csp({
+        policy: { 'script-src': '*' },
+        reportUri: '/report-violation'
+      }));
+      app.use(lusca.xframe('SAMEORIGIN'));
+      app.use(lusca.hsts({ maxAge: 31536000 });
+      app.use(lusca.xssProtection(true);
+      
+  section
+    h2 Cross Site Request Forgery - lusca.csrf(options)
+
+    p.
+      Makes #[code _csrf] available in views and requires that value to be echoed back
+      in any subsequent posts.
+
+    ul
+      li #[code options.key] - the name of the CSRF token (default: #[code _csrf]
+      li #[code options.impl] - custom function to generate token
+  section
+    h2 Content Security Policy - lusca.csp(options)
+
+    p Adds CSP headers.
+    
+    ul
+      li #[code options.policy] - object specifying the policy (see: https://www.owasp.org/index.php/Content_Security_Policy)
+      li #[code options.reportUri] - uri to report violations to
+      li #[code options.reportOnly] - set this to true if you only want to report, but not block violations
+  section
+    h2 Clickjacking - lusca.xframe(value)
+
+    p Control where the site can appear in an iframe:
+    ul
+      li DENY
+      li SAMEORIGIN
+      li ALLOW-FROM uri
+  section
+    h2 HTTP Strict Transport Security - lusca.hsts(options)
+    p Enforce strict transport security
+    ul
+      li #[code options.maxAge] - Numnber of seconds HSTS is in effect.
+      li #[code options.includeSubDomains] - set to true to include sub-domains.
+  section
+    h2 luscaxssProtection(options)
+    p IE8 XSS protection headers.
+    ul
+      li #[code options.enabled] - defaults to true
+      li #[code options.mode] - defaults to block

@@ -4,6 +4,7 @@ block content
   .container
     h1 Forbes Lindesay - Slides
     p This page collects all the slides for software related presentations I've given.
+    p Full length talks:
     mixin talk(id, title)
       li
         a(href='/' + id)= title
@@ -11,3 +12,6 @@ block content
       +talk('promises-and-generators', 'Promises & Generators - Control Flow Utopia')
       +talk('patterns-of-promise-use', 'Patterns of Promise Use')
       +talk('jade-introduction', 'Jade - An Introduction')
+    p Lightening talks:
+    ul
+      +talk('lusca', 'lusca - Web application security middleware')
