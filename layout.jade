@@ -11,7 +11,7 @@ block content
       block
   mixin section-break(title)
     section.section-break-slide(data-state="section-break")
-      h2!= jade.escape(title).replace(/tt/g, '<span class="tt">tt</span>')
+      h2!= jade.escape(title).replace(/tt/g, '<span class="tt">tt</span>').replace(/\n/g, '<br/>')
       block
   mixin title-slide(title, subtitle, tag)
     section

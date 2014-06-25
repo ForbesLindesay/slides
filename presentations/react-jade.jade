@@ -1,0 +1,314 @@
+extends /layout.jade
+
+block title
+  title Jade
+
+block slides
+  +title-slide('react-jade', 'A compiler for jade that produces a react component')
+  +section-break('Jade Introduction')
+  section
+    h2 Templating Language
+    ul
+      li Produces HTML
+      li Supports dynamic code
+  section
+    h2 HTML
+    :html
+      <!DOCTYPE html>
+      <html lang="en">
+        <head>
+          <title>Jade</title>
+        </head>
+        <body>
+          <h1>Jade - node template engine</h1>
+          <article>
+            <p>Jade is a terse and simple
+               templating language with a
+               strong focus on performance
+               and powerful features.</p>
+          </article>
+        </body>
+      </html>
+  section
+    h2 HTML
+    :html
+      <!DOCTYPE html>
+      <html lang="en">
+        <head>
+          <title>Jade
+        <body>
+          <h1>Jade - node template engine
+          <article>
+            <p>Jade is a terse and simple
+               templating language with a
+               strong focus on performance
+               and powerful features.
+  section
+    h2 JADE
+    :jade
+      doctype html
+      html(lang="en")
+        head
+          title Jade
+        body
+          h1 Jade - node template engine
+          article
+            p.
+              Jade is a terse and simple
+              templating language with a
+              strong focus on performance
+              and powerful features.
+  section
+    h2 Buffering Output
+    :jade
+      = jsVariable
+      != jsVariable
+    :javascript
+      var fn = jade.compile(template);
+      var html = fn({jsVariable: '<foo>'});
+    :html
+      &lt;foo&gt;
+      <foo>
+  section
+    h2 Buffering Output
+    :javascript
+      function template(locals) {
+        var buf = [], jade_interp;
+        var locals_ = locals || {}, jsVariable = locals_.jsVariable;
+        buf.push(jade.escape(null == (jade_interp = jsVariable) ?
+                             "" : jade_interp)
+              + (null == (jade_interp = jsVariable) ? "" : jade_interp));
+        return buf.join("");
+      }
+  section
+    h2 Dynamic Attributes
+    :jade
+      a(href="mailto:" + email)= email
+    :javascript
+      var fn = jade.compile(template);
+      var html = fn({email:'forbes@lindesay.co.uk'});
+    :html
+      <a href="mailto:forbes@lindesay.co.uk">forbes@lindesay.co.uk</a>
+  section
+    h2 Loops and Conditionals
+    :jade
+      ul
+        each value in list
+          li= value
+      if awesome
+        p You are awesome
+      else
+        p You could use improvement
+    :javascript
+      var fn = jade.compile(template)
+      var html = fn({list: [1, 2], awesome: true});
+    :html
+      <ul>
+        <li>1</li>
+        <li>2</li>
+      </ul>
+      <p>You are awesome</p>
+  section
+    h2 Custom JavaScript
+    :jade
+      ul
+        - list.forEach(function (value) {
+          li= value
+        - });
+    :javascript
+      var fn = jade.compile(template);
+      var html = fn({list: [1, 2]});
+    :html
+      <ul>
+        <li>1</li>
+        <li>2</li>
+      </ul>
+  section
+    h2 Includes
+    :jade
+      //- root.jade
+      article
+        include ./child.jade
+    :jade
+      //- child.jade
+      h2 An Article
+      p Blah Blah Blah
+    :javascript
+      var fn = jade.compileFile('root.jade');
+      var html = fn();
+    :html
+      <article>
+        <h2>An Article</h2>
+        <p>Blah Blah Blah</p>
+      </article>
+  +section-break('React Jade')
+  section
+    h2 react-jade
+    pre: code npm install react-jade --save
+    :javascript
+      var React = require('react');
+      var jade = require('react-jade');
+      var fn = jade.compileFile(__dirname + '/view.jade');
+      var html = React.renderComponentToString(fn({
+        articleText: 'Hello World'
+      }));
+    p view.jade
+    :jade
+      h1 Jade - node template engine
+      article
+        p= articleText
+  section
+    h2 output
+    :html
+      <div data-reactid=".4j4gsqknwg" data-react-checksum="1164730533">
+        <h1 data-reactid=".4j4gsqknwg.0">
+          <span data-reactid=".4j4gsqknwg.0.0">
+            Jade - node template engine
+          </span>
+        </h1>
+        <article data-reactid=".4j4gsqknwg.1">
+          <p data-reactid=".4j4gsqknwg.1.0">
+            <span data-reactid=".4j4gsqknwg.1.0.0">
+              Hello World
+            </span>
+          </p>
+        </article>
+      </div>
+  section
+    h2 compileFileClient
+    :javascript
+      var jade = require('react-jade');
+      var js = jade.compileFileClient(__dirname + '/view.jade');
+    :javascript
+      (function (React) {
+        var jade_globals_articleText=typeof articleText === "undefined" ?
+          undefined : articleText;
+        return function (locals) {
+          var articleText = "articleText" in locals ?
+            locals.articleText : jade_globals_articleText;
+          return React.DOM.div({}, [
+            React.DOM.h1({}, ["Jade - node template engine"]),
+            React.DOM.article({}, [React.DOM.p({}, [articleText])])
+          ]);
+        };
+      }(typeof React !== "undefined" ? React : require("react")))
+  section
+    h2 Browserify
+    p server.js
+    :javascript
+      var browserify = require('browserify-middleware');
+      app.get('/client.js', browserify(__dirname + '/client.js', {
+        transform: [require('react-jade')]
+      });
+    p client.js
+    :javascript
+      var React = require('react');
+      var jade = require('react-jade');
+      var fn = jade.compileFile(__dirname + '/view.jade');
+
+      var html = React.renderComponent(fn({
+        articleText: 'Hello World'
+      }), document.getElementById('container'));
+  section
+    h2 Browserify
+    :javascript
+      var React = require('react');
+      var fn = (function (React) {
+        var jade_globals_articleText=typeof articleText === "undefined" ?
+          undefined : articleText;
+        return function (locals) {
+          var articleText = "articleText" in locals ?
+            locals.articleText : jade_globals_articleText;
+          return React.DOM.div({}, [
+            React.DOM.h1({}, ["Jade - node template engine"]),
+            React.DOM.article({}, [React.DOM.p({}, [articleText])])
+          ]);
+        };
+      }(typeof React !== "undefined" ? React : require("react")));
+
+      var html = React.renderComponent(fn({
+        articleText: 'Hello World'
+      }), document.getElementById('container'));
+  +section-break('How it works')
+  section
+    h2 Lexer & Parser
+    :javascript
+      var Parser = require('jade/lib/parser.js');
+      var jade = require('jade/lib/runtime.js');
+      var parser = new Parser(str, options.filename, options);
+      var ast;
+      try {
+        // Parse
+        ast = parser.parse();
+      } catch (err) {
+        parser = parser.context();
+        jade.rethrow(err, parser.filename, parser.lexer.lineno, parser.input);
+      }
+  section
+    h2 Compiler
+    :javascript
+      Compiler.prototype.visitTag = function (tag) {
+        this.buf.push('tags.push(React.DOM.' + tag.name + '(');
+        this.buf.push(getAttributes(tag.attrs));
+        if (tag.block && tag.block.nodes.length) {
+          this.buf.push(', (function () { var tags = [];');
+          this.visit(tag.block);
+          this.buf.push('return tags;}())');
+        }
+        this.buf.push('))');
+      };
+      function getAttributes(attrs){
+        var buf = [];
+        attrs.forEach(function(attr){
+          buf.push(JSON.stringify(attr.name) + ': ' + attr.val);
+        });
+        return '{' + buf.join(',') + '}';
+      }
+  section
+    h2 Compressor
+    :javascript
+      Compressor.prototype.after = function(node) {
+        var isSelfCallingFnWithJustReturn = isSelfCallingFunction(node) &&
+          node.args.length === 0 &&
+          node.expression.body.length > 0 &&
+          node.expression.body[0].TYPE === 'Return';
+
+        if (isSelfCallingFnWithJustReturn) {
+          return node.expression.body[0].value;
+        }
+
+        if (node.TYPE === 'Function') {
+          return collapseToReturnStatement(node);
+        }
+      };
+  section
+    h2 Compressor - getReturnStatement
+    :javascript
+      function collapseToReturnStatement(node) {
+        var declaration = node.body[0];
+        var pushStatements = node.body.slice(1, node.body.length - 1);
+        var returnStatement = node.body[node.body.length - 1];
+        if (!isArrayVariableDefinition(declaration) return;
+        var name = declaration.definitions[0].name.name;
+        var array = declaration.definitions[0].value;
+        var isCollapsible = pushStatements.every(isArrayPush(name)) &&
+                            isReturn(returnStatement, name);
+        if (!isCollapsible) return;
+        returnStatement.value = array;
+        array.elements = pushStatements.reduce(function (elements, push) {
+          elements.concat(push.body.args);
+        }, array.elements);
+        node.body = [returnStatement];
+      }
+  section
+    h2 Roadmap
+    p github.com/ForbesLindesay/react-jade
+    ul
+      li mixins
+      li attribute extension/merging (via &attributes)
+      li case/when
+      li using each to iterate over keys of an object (rather than over items in an array)
+      li interpolation
+      li attribute interpollation
+      li special handling of data-attributes
+      li outputting unescaped html results in an extra wrapper div and doesn't work for attributes
