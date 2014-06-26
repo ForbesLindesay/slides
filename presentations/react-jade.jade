@@ -236,14 +236,7 @@ block slides
       var Parser = require('jade/lib/parser.js');
       var jade = require('jade/lib/runtime.js');
       var parser = new Parser(str, options.filename, options);
-      var ast;
-      try {
-        // Parse
-        ast = parser.parse();
-      } catch (err) {
-        parser = parser.context();
-        jade.rethrow(err, parser.filename, parser.lexer.lineno, parser.input);
-      }
+      var ast = parser.parse();
   section
     h2 Compiler
     :javascript

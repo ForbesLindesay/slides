@@ -11,7 +11,7 @@
     "less-fixed": "0.0.4",
     "browserify": "^3.44.2",
     "highlight-codemirror": "^3.20.0",
-    "ecstatic": "^0.5.1",
+    "ecstatic": "0.5.1",
     "reveal": "0.0.4"
   },
   "repository": {
