@@ -6,13 +6,23 @@ block title
 block slides
   +title-slide('Service Workers', 'writing offline first web applications in the future')
   section
+    h2 App Cache
+    pre: code.
+      CACHE MANIFEST
+
+      # updated 2013-06-18T14:51:58.057Z
+
+      /
+      /static/2.0.0/style.css
+      /static/2.0.0/background.png
+      /static/2.0.0/image.png
+  section
     h2 Content + Shell === App
     ul
       li Email Clients
       li Magazine Readers
       li Games with downloadable levels
       li RSS readers
-    p We want to store multiple caches for different types of content.
   section
     h2 Registering a service worker
     p Must be SSL
@@ -61,7 +71,8 @@ block slides
     h2 Populating a Cache
     :javascript
       this.addEventListener('install', function(e) {
-        // Create a cache of resources. Begins the process of fetching them.
+        // Create a cache of resources.
+        // Begins the process of fetching them.
         var shellResources = new Cache(
           base + "/assets/v1/base.css",
           base + "/assets/v1/app.js",
@@ -79,12 +90,8 @@ block slides
     h2 Fallback to Cache
     :javascript
       this.addEventListener('fetch', function(e) {
-        // No "onfetch" events are dispatched to the ServiceWorker until it
-        // successfully installs.
-
         // All operations on caches are async, including matching URLs,
-        // so we use Promises heavily. e.respondWith() even takes
-        // Promises to enable this:
+        // so we use Promises heavily.
         e.respondWith(fetch(e.request).catch(function() {
           return caches.match(e.request);
         }));
