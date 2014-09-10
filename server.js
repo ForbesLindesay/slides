@@ -59,13 +59,24 @@ function compileJade(source, dest) {
     return writeFile(dest, res[1]);
   });
 }
+function copyFolder(source, destination) {
+  return mkdirp(destination).then(function () {
+    return fs.readdirSync(source).forEach(function (file) {
+      fs.writeFileSync(destination + '/' + file, fs.readFileSync(source + '/' + file));
+    });
+  });
+}
 function compile() {
   var presentations = Promise.all(fs.readdirSync(__dirname + '/presentations')
   .map(function (presentation) {
-    var source = path.join(__dirname, 'presentations', presentation);
-    var dest = path.join(__dirname, 'output', presentation.replace(/\.jade$/, ''),
-                         'index.html');
-    return compileJade(source, dest);
+    if (/\.jade$/.test(presentation)) {
+      var source = path.join(__dirname, 'presentations', presentation);
+      var dest = path.join(__dirname, 'output', presentation.replace(/\.jade$/, ''),
+                           'index.html');
+      return compileJade(source, dest);
+    } else {
+      return copyFolder(path.join(__dirname, 'presentations', presentation), path.join(__dirname, 'output', presentation));
+    }
   }));
   var css = less.toDisc(__dirname + '/index.less', __dirname + '/output/index.css');
   var js = browserify(__dirname + '/index.js', {debug: false}).then(function (res) {

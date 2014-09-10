@@ -1,0 +1,83 @@
+extends /layout.jade
+
+block title
+  title GitHub Automation
+
+block slides
+  +title-slide('GitHub Automation')
+  section
+    h2 Introduciton
+    ul
+      li a rest API
+      li a synchronous JavaScript client
+      li a production ready JavaScript client
+      li a story of going too far
+  section
+    h2 A website built on GitHub
+    ul
+      li Free, unlimited storage
+      li Built in support for editing and moderation
+  section
+    h2 Git command line
+    ul
+      li Simple to get started
+      li Requires installation
+      li Limited functionality
+      li Requires having everything locally to make changes
+  section
+    h2 GitHub API
+    ul
+      li Difficult to make multi-file commits
+      li No installation required
+      li Full functionality of GitHub
+  section
+    h2 Making a Commit
+    div(style="font-size: 0.7em;")
+      :javascript
+        function commit(owner, repo, branch, commit, opts) {
+          var message = commit.message;
+          var updates = commit.updates;
+          // => [{path: 'string', content: 'string'}, ...]
+          var force = opts.force || false;
+
+          var head = client.get('/repos/:owner/:repo/git/refs/:ref',
+            {owner: owner, repo: repo, ref: 'heads/' + branch});
+          var shaLatestCommit = head.object.sha;
+
+          var commit = client.get('/repos/:owner/:repo/git/commits/:sha',
+            {owner: owner, repo: repo, sha: shaLatestCommit});
+          var shaBaseTree = commit.tree.sha;
+
+          var newTree = client.post('/repos/:owner/:repo/git/trees',
+            {owner: owner, repo: repo, tree: updates, base_tree: shaBaseTree});
+          var shaNewTree = newTree.sha;
+
+          var newCommit = client.post('/repos/:owner/:repo/git/commits',
+            {owner: owner, repo: repo, message: message, tree: shaNewTree, parents: [shaLatestCommit]});
+          var shaNewCommit = newCommit.sha;
+
+          client.patch('/repos/:owner/:repo/git/refs/:ref',
+            {owner: owner, repo: repo, ref: 'heads/' + branch, sha: shaNewCommit, force: force});
+        }
+  section
+    h2 REST API
+    p https://developer.github.com
+    p https://api.github.com
+    p Some requests return "404 Not Found" when they should return "403 Forbidden"
+  section
+    h2 Authentication - OAuth2
+    pre: code $ curl -H "Authorization: token OAUTH-TOKEN" https://api.github.com
+    pre: code $ curl https://api.github.com/?access_token=OAUTH-TOKEN
+  section
+    img(src="/github-automation/personal-access-tokens.png")
+  section
+    img(src="/github-automation/personal-access-token-new.png")
+  +section-break('GitHub Issues')
+  section
+    :javascript
+      var ACCESS_TOKEN = 'YOUR TOKEN HERE';
+      var github = require('github-basic');
+
+      github.stream('GET', '/user/issues', {}, {auth: ACCESS_TOKEN}).map(function (issue) {
+        console.log(issue);
+      });
