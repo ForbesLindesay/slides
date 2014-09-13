@@ -23,7 +23,7 @@ CodeMirror.loadMode('xml');
 CodeMirror.loadMode('htmlmixed');
 
 jade.filters.javascript = function (src) {
-  return '<pre class="cm-s-default CodeMirror"><code>'
+  return '<pre class="cm-s-default CodeMirror"><code style="overflow: auto; display: block">'
   + CodeMirror.highlight(src, {name: 'javascript'})
   + '</code></pre>'
 }
@@ -62,6 +62,7 @@ function compileJade(source, dest) {
 function copyFolder(source, destination) {
   return mkdirp(destination).then(function () {
     return fs.readdirSync(source).forEach(function (file) {
+      if (file === '.DS_Store') return;
       fs.writeFileSync(destination + '/' + file, fs.readFileSync(source + '/' + file));
     });
   });
@@ -69,6 +70,7 @@ function copyFolder(source, destination) {
 function compile() {
   var presentations = Promise.all(fs.readdirSync(__dirname + '/presentations')
   .map(function (presentation) {
+    if ('.DS_Store' === presentation) return;
     if (/\.jade$/.test(presentation)) {
       var source = path.join(__dirname, 'presentations', presentation);
       var dest = path.join(__dirname, 'output', presentation.replace(/\.jade$/, ''),

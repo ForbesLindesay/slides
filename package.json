@@ -20,7 +20,7 @@
   },
   "scripts": {
     "prerelease": "rimraf output",
-    "release": "node server build && mandate"
+    "release": "node server build && rimraf output/github-automation/demo.mp4 && mandate"
   },
   "devDependencies": {
     "rimraf": "^2.2.6",

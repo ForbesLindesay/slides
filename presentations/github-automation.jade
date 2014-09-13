@@ -6,30 +6,23 @@ block title
 block slides
   +title-slide('GitHub Automation')
   section
-    h2 Introduciton
-    ul
-      li a rest API
-      li a synchronous JavaScript client
-      li a production ready JavaScript client
-      li a story of going too far
+    h2 REST API
+    p https://developer.github.com
+    p https://api.github.com
+    p Some requests return "404 Not Found" when they should return "403 Forbidden"
   section
-    h2 A website built on GitHub
-    ul
-      li Free, unlimited storage
-      li Built in support for editing and moderation
+    img(src="/github-automation/personal-access-tokens.png")
   section
-    h2 Git command line
-    ul
-      li Simple to get started
-      li Requires installation
-      li Limited functionality
-      li Requires having everything locally to make changes
+    img(src="/github-automation/personal-access-token-new.png")
   section
-    h2 GitHub API
-    ul
-      li Difficult to make multi-file commits
-      li No installation required
-      li Full functionality of GitHub
+    h2 Authentication - OAuth2
+    :javascript
+      var github = require('github-basic');
+      var client = github({
+        version: 3,
+        auth: '<MY-OAUTH-TOKEN>',
+        sync: true
+      });
   section
     h2 Making a Commit
     div(style="font-size: 0.7em;")
@@ -60,24 +53,230 @@ block slides
             {owner: owner, repo: repo, ref: 'heads/' + branch, sha: shaNewCommit, force: force});
         }
   section
-    h2 REST API
-    p https://developer.github.com
-    p https://api.github.com
-    p Some requests return "404 Not Found" when they should return "403 Forbidden"
+    h2 Demo Time
+    video(controls preload="none" musted width="533px" height="400px" src="/github-automation/demo.mp4")
+  +section-break('Bot')
   section
-    h2 Authentication - OAuth2
-    pre: code $ curl -H "Authorization: token OAUTH-TOKEN" https://api.github.com
-    pre: code $ curl https://api.github.com/?access_token=OAUTH-TOKEN
+    h2 Jade
+    p before
+    pre: code: span.cm-meta !!! 5
+    p after
+    :jade
+      doctype html
+    p Several angry people: https://github.com/visionmedia/jade/pull/1374
   section
-    img(src="/github-automation/personal-access-tokens.png")
-  section
-    img(src="/github-automation/personal-access-token-new.png")
-  +section-break('GitHub Issues')
-  section
+    h2 Jade - fixup-doctype.js
     :javascript
-      var ACCESS_TOKEN = 'YOUR TOKEN HERE';
-      var github = require('github-basic');
+      module.exports = function (text) {
+        return text
+          .replace(/^\s*\!\!\!\n/g, '!!! 5\n')
+          .replace(/^\s*\!\!\! ([a-zA-Z0-9]+\s*\n)/g, 'doctype $1')
+          .replace(/^\s*doctype 5(\s*\n)/g, 'doctype html$1');
+      };
+  section
+    h2 Jade - fix repo
+    div
+      :javascript
+        var github = require('github-basic');
+        var GitHubBot = require('github-bot');
+        var fixDoctype = require('./fix-doctype.js');
 
-      github.stream('GET', '/user/issues', {}, {auth: ACCESS_TOKEN}).map(function (issue) {
-        console.log(issue);
-      });
+        var GITHUB_TOKEN = '<GITHUB-TOKEN>';
+
+        var client = github({version: 3, auth: GITHUB_TOKEN, sync: true});
+        var bot = new GitHubBot(GITHUB_TOKEN, 'store', processRepo);
+        bot.run('visionmedia', 'jade').done();
+
+        var TITLE = 'Change doctype from using !!! 5' +
+                    ' style to doctype html';
+        var BODY = 'Jade has removed support for `!!!`' +
+                   ' as a shorthand for writing `doctype`' +
+                   ' and `5` as a shorthand for writing' +
+                   ' `html`.  This automated pull request' +
+                   ' updates the doctypes in your repository.';
+
+        function processRepo(owner, repo, branch, files) {
+          // files is an array of
+          // {
+          //   path: 'path/to/file.js',
+          //   name: 'file.js',
+          //   data: Buffer(body of file),
+          //   text: 'body of file'
+          // }
+          files = files.filter(function (file) {
+            return /\.jade$/.test(file.name);
+          });
+          if (files.length === 0) return;
+          var results = files.map(function (file) {
+            return {
+              path: file.path,
+              content: fixDoctype(file.text)
+            };
+          });
+          results = results.filter(function (result, index) {
+            return result.content !== files[index].text;
+          });
+          if (results.length === 0) return;
+          client.fork(owner, repo, {organization: 'jade-bot-1'});
+          client.branch('jade-bot-1', repo, branch, 'fix-doctype');
+          client.commit('jade-bot-1', repo, {
+            branch: 'fix-doctype',
+            message: 'Fix use of deprecated jade features and update jade',
+            updates: results
+          });
+          var res = client.pull(
+            {user: 'jade-bot-1', repo: repo,branch: 'fix-doctype'},
+            {user: owner, repo: repo, branch: branch},
+            {title: TITLE, body: BODY});
+          console.log(res._links.html.href);
+        }
+  section
+    img(src="/github-automation/merged-request.png")
+  section
+    img(src="/github-automation/closed-request.png")
+  +section-break('esdicuss.org')
+  section
+    h2 Before
+    img(src="/github-automation/esdiscuss-old.png")
+  section
+    h2 After
+    img(src="/github-automation/esdiscuss-new.png")
+  section
+    h2 Version 0
+    svg(xmlns="http://www.w3.org/2000/svg" width="620" height="120")
+      rect(x="10" y="10" height="100" width="200" style="stroke:#c00080; fill: none; stroke-width: 10;")
+      text(x="50" y="68") PIPERMAIL
+      polygon(points="240,40 360,40 360,30 380,60 360,90 360,80 240,80"
+        style="stroke:#c00080; fill: none; stroke-width: 10;")
+      text(x="250" y="68") AT BUILD
+      rect(x="410" y="10" height="100" width="200" style="stroke:#c00080; fill: none; stroke-width: 10;")
+      text(x="480" y="68") HTML
+    div
+    ul
+      li Slow to see changes to rendering logic
+      li Fast to load pages
+      li One post per page
+      li No support for editing
+  section
+    h2 Version 1
+    svg(xmlns="http://www.w3.org/2000/svg" width="620" height="120")
+      rect(x="10" y="10" height="100" width="200" style="stroke:#c00080; fill: none; stroke-width: 10;")
+      text(x="50" y="68") PIPERMAIL
+      polygon(points="240,40 360,40 360,30 380,60 360,90 360,80 240,80"
+        style="stroke:#c00080; fill: none; stroke-width: 10;")
+      text(x="250" y="68") PER REQ
+      rect(x="410" y="10" height="100" width="200" style="stroke:#c00080; fill: none; stroke-width: 10;")
+      text(x="480" y="68") HTML
+    div
+    ul
+      li Fast to see changes to rendering logic
+      li Slow to load pages
+      li One post per page
+      li No support for editing
+  section
+    h2 A website built on GitHub
+    ul
+      li Free, unlimited storage
+      li Built in support for editing and moderation
+  section
+    h2 Version 2
+    svg(xmlns="http://www.w3.org/2000/svg" width="1020" height="240")
+      rect(x="10" y="10" height="100" width="200" style="stroke:#c00080; fill: none; stroke-width: 10;")
+      text(x="50" y="68") PIPERMAIL
+      polygon(points="240,40 360,40 360,30 380,60 360,90 360,80 240,80"
+        style="stroke:#c00080; fill: none; stroke-width: 10;")
+      text(x="250" y="68") ONCE
+      rect(x="410" y="10" height="100" width="200" style="stroke:#c00080; fill: none; stroke-width: 10;")
+      text(x="480" y="68") GitHub
+      polygon(points="240,40 360,40 360,30 380,60 360,90 360,80 240,80"
+        style="stroke:#c00080; fill: none; stroke-width: 10;" transform="translate(0) rotate(20 50 50)")
+      text(x="250" y="68" transform="translate(0) rotate(20 50 50)") ONCE
+      rect(x="410" y="120" height="100" width="200" style="stroke:#c00080; fill: none; stroke-width: 10;")
+      text(x="460" y="178") Database
+      polygon(points="640,40 760,40 760,30 780,60 760,90 760,80 640,80"
+        style="stroke:#c00080; fill: none; stroke-width: 10;" transform="translate(0) rotate(-20 1000 50)")
+      text(x="650" y="68" transform="translate(0) rotate(-20 1000 50)") PER REQ
+      polygon(points="640,40 760,40 760,30 780,60 760,90 760,80 640,80"
+        style="stroke:#c00080; fill: none; stroke-width: 10;")
+      text(x="650" y="68") PER REQ
+      rect(x="810" y="10" height="100" width="200" style="stroke:#c00080; fill: none; stroke-width: 10;")
+      text(x="880" y="68") HTML
+    div
+    ul
+      li Fast to see changes to rendering logic
+      li Slow to load pages
+      li Many posts per page
+      li Great support for editing
+  section
+    h2 Git command line
+    ul
+      li Simple to get started
+      li Requires installation
+      li Limited functionality
+      li Requires having everything locally to make changes
+  section
+    h2 GitHub API
+    ul
+      li Difficult to make multi-file commits
+      li No installation required
+      li Full functionality of GitHub
+  section
+    h2 Version 3
+    svg(xmlns="http://www.w3.org/2000/svg" width="1020" height="120")
+      rect(x="10" y="10" height="100" width="200" style="stroke:#c00080; fill: none; stroke-width: 10;")
+      text(x="50" y="68") PIPERMAIL
+      polygon(points="240,40 360,40 360,30 380,60 360,90 360,80 240,80"
+        style="stroke:#c00080; fill: none; stroke-width: 10;")
+      text(x="250" y="68") ONCE
+      rect(x="410" y="10" height="100" width="200" style="stroke:#c00080; fill: none; stroke-width: 10;")
+      text(x="460" y="68") Database
+      polygon(points="640,40 760,40 760,30 780,60 760,90 760,80 640,80"
+        style="stroke:#c00080; fill: none; stroke-width: 10;")
+      text(x="650" y="68") PER REQ
+      rect(x="810" y="10" height="100" width="200" style="stroke:#c00080; fill: none; stroke-width: 10;")
+      text(x="880" y="68") HTML
+    div
+    ul
+      li Fast to see changes to rendering logic
+      li Fast to load pages
+      li Many posts per page
+      li Support for editing
+  +section-break('Other Ideas')
+  section
+    h2 Open Source Report Card
+    img(src="/github-automation/report-card.png")
+  section
+    h2 Git Spective
+    img(src="/github-automation/gitspective.png")
+  section
+    h2 HuBoard
+    img(src="/github-automation/huboard.gif")
+  section
+    h2 Personal Issue Task List
+    ul
+      li Oldest first
+      li Ability to create and save filters
+      li Can be responded to:
+        ul
+          li Permanently mute/close
+          li Hide for a day
+          li Hide for a week
+          li Hide for a month
+          li Hide until someone else comments
+  section
+    h2 Automatic New Version Publisher
+    p http://cdnjs.com/
+    p Accepts submissions of updated libraries via pull-requests
+    p Has recently moved to a (better) npm based model
+  section
+    h2 Automatically patch security vulnerabilities
+    ol
+      li Read security issue on https://nodesecurity.io/
+      li Find all libaries that depend on broken module
+      li Submit pull requests to update the version in package.json
+  section
+    h2 Build More Bots
+    ul
+      li Fix deprecated features
+      li Hunt for likely error such as undefined variables
+      li Close issues that haven't been touched in years

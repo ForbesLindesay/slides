@@ -10,5 +10,6 @@ Reveal.initialize({
   center: true,
   margin: 0,
   dependencies: [],
-  transition: 'none'
+  transition: 'none',
+  slideNumber: true
 });
