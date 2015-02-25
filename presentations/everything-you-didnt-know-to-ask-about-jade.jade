@@ -1,0 +1,453 @@
+extends /layout.jade
+
+block title
+  title Jade
+
+block slides
+  +title-slide('Jade', 'everything you didn\'t know to ask')
+  section
+    h2 Templating Language
+    ul
+      li Produces HTML
+      li Supports dynamic code
+      li Supports reusability (DRY)
+  section
+    h2 HTML
+    :html
+      <!DOCTYPE html>
+      <html lang="en">
+        <head>
+          <title>Jade</title>
+        </head>
+        <body>
+          <h1>Jade - node template engine</h1>
+          <article>
+            <p>Jade is a terse and simple
+               templating language with a
+               strong focus on performance
+               and powerful features.</p>
+          </article>
+        </body>
+      </html>
+  section
+    h2 HTML
+    :html
+      <!DOCTYPE html>
+      <html lang="en">
+        <head>
+          <title>Jade
+        <body>
+          <h1>Jade - node template engine
+          <article>
+            <p>Jade is a terse and simple
+               templating language with a
+               strong focus on performance
+               and powerful features.
+  section
+    h2 JADE
+    :jade
+      doctype html
+      html(lang="en")
+        head
+          title Jade
+        body
+          h1 Jade - node template engine
+          article
+            p.
+              Jade is a terse and simple
+              templating language with a
+              strong focus on performance
+              and powerful features.
+  +section-break('Features')
+  section
+    h2 Inline HTML
+    :html
+      <!--[if IE 8]>
+        <html lang="en" class="lt-ie9">
+      <![endif]-->
+      <!--[if gt IE 8]><!-->
+        <html lang="en">
+      <!--<![endif]-->
+  section
+    h2 Buffering Output
+    :jade
+      = jsVariable
+      != jsVariable
+    :javascript
+      var html = jade.render(template, {jsVariable: '<foo>'});
+    :html
+      &lt;foo&gt;
+      <foo>
+  section
+    h2 Dynamic Attributes
+    :jade
+      a(href="mailto:" + email)= email
+    :javascript
+      var html = jade.render(template, {email:'forbes@lindesay.co.uk'});
+    :html
+      <a href="mailto:forbes@lindesay.co.uk">forbes@lindesay.co.uk</a>
+  section
+    h2 Interpolatioin
+    :jade
+      p.
+        We would like to welcome \#{name} to this talk
+        with the following snippet of html: \!{html}
+    :javascript
+      var html = jade.render(template, {
+        name: 'Forbes',
+        html: '<strong>welcome</strong>'
+      });
+    :html
+      <p>We would like to welcome Forbes to this talk
+         with the following snippet of html: <strong>welcome</strong></p>
+  section
+    h2 Interpolation Continued
+    :jade
+      p.
+        We would like to welcome \#[strong= name] to this talk.
+    :javascript
+      var html = jade.render(template, { name: 'Forbes' });
+    :html
+      <p>We would like to welcome <strong>Forbes</strong> to this talk.</p>
+  section
+    h2 Loops and Conditionals
+    :jade
+      ul
+        each value in list
+          li= value
+      if awesome
+        p You are awesome
+      else
+        p You could use improvement
+    :javascript
+      var html = jade.render(template, {list: [1, 2], awesome: true});
+    :html
+      <ul>
+        <li>1</li>
+        <li>2</li>
+      </ul>
+      <p>You are awesome</p>
+  section
+    h2 Custom JavaScript
+    p (a last resort)
+    :jade
+      ul
+        - list.forEach(function (value) {
+          li= value
+        - });
+    :javascript
+      var html = jade.render(template, {list: [1, 2]});
+    :html
+      <ul>
+        <li>1</li>
+        <li>2</li>
+      </ul>
+  section
+    h2 Includes
+    p The simplest way to re-use code
+    :jade
+      //- root.jade
+      article
+        include ./child.jade
+    :jade
+      //- child.jade
+      h2 An Article
+      p Blah Blah Blah
+    :javascript
+      var html = jade.renderFile('root.jade');
+    :html
+      <article>
+        <h2>An Article</h2>
+        <p>Blah Blah Blah</p>
+      </article>
+  section
+    h2 Mixins
+    p Re-use blocks with an adjustment
+    :jade
+      mixin article(name, body)
+        article
+          h2= name
+          p= body
+      +article('A1', 'The first article')
+      +article('A2', 'The second article')
+    :html
+      <article>
+        <h2>A1</h2>
+        <p>The first article</p>
+      </article>
+      <article>
+        <h2>A2</h2>
+        <p>The second article</p>
+      </article>
+  section
+    h2 Mixins with bodies
+    :jade
+      mixin article(name)
+        article
+          h2= name
+          block
+      +article('A1')
+        p The first article
+      +article('A2')
+        p The second article
+    :html
+      <article>
+        <h2>A1</h2>
+        <p>The first article</p>
+      </article>
+      <article>
+        <h2>A2</h2>
+        <p>The second article</p>
+      </article>
+  section
+    h2 Inheritance
+    :jade
+      //- base.jade
+      doctype html
+      html
+        head
+          block title
+            title Default Title
+        body
+          block content
+    :jade
+      //- article.jade
+      extends ./base.jade
+
+      block title
+        title My Article Title
+
+      block content
+        p An epic article
+  section
+    h2 Inheritance
+    :html
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>My Article Title</title>
+        </head>
+        <body>
+          <p>An epic article</p>
+        </body>
+      </html>
+  section
+    h2 Inheritance - Multi Level
+
+    :jade
+      //- authenticated.jade
+      extends ./base.jade
+
+      block title
+        title Authenticated
+
+    :jade
+      //- anonymous.jade
+      extends ./base.jade
+
+      block title
+        title Anonymous
+  +section-break('how it works')
+  section
+    h2 Compiler Pipeline
+    img(src="/everything-you-didnt-know-to-ask-about-jade/compiler.svg")
+  section
+    h2 Lexer
+    p: a(href="https://github.com/jadejs/jade-lexer") github.com/jadejs/jade-lexer
+    ul
+      li Reads input one character at a time
+      li Uses lots of regular expressions
+      li Breaks stream up into tokens
+      li Uses #[a(href="https://www.npmjs.com/package/character-parser") character-parser] to handle JavaScript
+  section
+    h2 Character-Parser
+    p: a(href="https://github.com/ForbesLindesay/character-parser") github.com/ForbesLindesay/character-parser
+    :javascript
+      var parseMax = require('character-parser').parseMax;
+      var expression = parseMax('foo="(", bar="}") bing bong').src;
+      assert(expression = 'foo="(", bar="}"');
+  section
+    h2 Parser
+    p: a(href="https://github.com/jadejs/jade-parser") github.com/jadejs/jade-parser
+    ul
+      li Reads in a stream of tokens
+      li Constructs a tree to represent the abstract logic
+      li.fragment Loads dependencies via #[code fs.readFileSync]
+      li.fragment Recursively, lexes, parses and links those dependencies
+      li.fragment Works by compiling the parent template with the current templates blocks in a #[code blocks] property
+  section
+    h2 Compiler Pipeline - Revised
+    img(src="/everything-you-didnt-know-to-ask-about-jade/compiler-with-linker.svg")
+  section
+    h2 Loader
+    p: a(href="https://github.com/jadejs/jade-load") github.com/jadejs/jade-load
+    ul
+      li Loads dependencies via #[code fs.readFileSync]
+      li Lexes each file using the #[code lexer]
+      li Parses each file using the #[code parser]
+  section
+    h2 Linker
+    p: a(href="https://github.com/jadejs/jade-linker") github.com/jadejs/jade-linker
+    ul
+      li Takes an AST with dependency's ASTs nested under the "extends" and "include" nodes.
+      li Links them together appropriately
+  section
+    h2 Compiler
+    p: a(href="https://github.com/jadejs/jade-code-gen") github.com/jadejs/jade-code-gen
+    ul
+      li Takes an AST that has already been linked
+      li Generates JavaScript code to push HTML strings into a #[code buffer] array.
+      li Uses #[a(href="https://github.com/jadejs/jade-runtime") jade-runtime], #[a(href="https://www.npmjs.com/package/constantinople") constantinople] and #[a(href="https://www.npmjs.com/package/with") with]
+  section
+    h2 Jade Runtime
+    p: a(href="https://github.com/jadejs/jade-runtime") github.com/jadejs/jade-runtime
+    ul
+      li Handles escaping code (replace #[code= '<'] with #[code= '&lt;'] etc.)
+      li Handles joining classes
+      li Hanldes stringifying style objects like #[code {color: 'red'}] into #[code "color: red"]
+      li Handles error reporting
+    p.fragment In jade@1 this must be loaded as a script tag on any page that uses Jade templates.
+    p.fragment In jade@2, the required methods can just be inlined to simplify the build process.
+  section
+    h2 Constantiople
+    p: a(href="https://github.com/ForbesLindesay/constantinople") github.com/ForbesLindesay/constantinople
+    ul
+      li Parses JavaScript using acorn
+      li Uses acorn-globals to get a list of global variables
+      li If that list is empty, evaluate the code to get a constant result
+  section
+    h2 With
+    p: a(href="https://github.com/ForbesLindesay/with") github.com/ForbesLindesay/with
+    ul
+      li Parses JavaScript using acorn
+      li Uses acorn-globals to get a list of global variables
+      li Makes that list of variables available within the template
+    p i.e.
+    :javascript
+      with(obj) {
+        buf.push(foo + bar);
+      }
+    p becomes
+    :javascript
+      var foo = obj.foo,
+          bar = obj.bar;
+      buf.push(foo + bar);
+  +section-break('Filters')
+  section
+    h2 Example
+    :jade
+      :markdown
+        # Heading 1
+
+        Paragraph of text
+    :html
+      <h1>Heading 1</h1>
+      <p>Paragraph of text</p>
+  section
+    h2 Transformers
+    p: a(href="https://github.com/ForbesLindesay/transformers") github.com/ForbesLindesay/transformers
+    ul
+      li Creates a common API for all #[code string + data -> string] transformations
+      li Does not include the modules needed for the transformations as a dependency
+      li Can only be released as one homgenous mass
+    :javascript
+      var transformer = require('transformers')['transformer-name'];
+      var ouptut = transformer.render(input, options)
+  section
+    h2 jstransfprmers
+    p: a(href="https://github.com/jstransformers") github.com/jstransformers
+    ul
+      li Creates a common API for all #[code string + data -> string] transformations
+      li Include the module needed for the transformation as a dependency
+      li Is released as many separate modules
+    :javascript
+      var transformer = require('jstransformer-transformer-name');
+      var ouptut = transformer.render(input, options)
+  section
+    h2 jstransformers - extreme open governance
+    p: a(href="https://github.com/jstransformers") github.com/jstransformers
+    p Get involved!!!
+  +section-break('Extensibility')
+  section
+    h2 React Jade
+    p: a(href="https://github.com/jadejs/react-jade") github.com/jadejs/react-jade
+    ul
+      li.fragment Uses jade-lexer
+      li.fragment Uses jade-parser
+      li.fragment Uses jade-loader
+      li.fragment Uses jade-linker
+      li.fragment Uses jade-runtime
+      li.fragment Uses constantinople
+      li.fragment Uses with
+  section
+    h2 React Jade
+    p: a(href="https://github.com/jadejs/react-jade") github.com/jadejs/react-jade
+    p Custom implementation of jade-code-gen
+    :jade
+      a(href="http://example.com") example
+    :javascript
+      React.createElement('a', {href: 'http://example.com'}, 'example')
+  section
+    h2 React Jade - Browserify
+    :javascript
+      var jade = require('react-jade');
+      module.exports = jade.compileFile(__dirname + 'input.jade');
+    p becomes
+    :javascript
+      module.exports = function (locals) {
+        return React.createElement('a', {
+          href: 'http://example.com'
+        }, 'example');
+      }
+  section
+    h2 React Jade - Browserify
+    :javascript
+      var React = require('react');
+      var jade = require('react-jade');
+      module.exports = React.createClass({
+        onClick: function () { this.setState({clicked: true}) },
+        render: jade`
+      if !this.state.clicked
+        button(onClick=this.onClick) Click Me!
+      else
+        p You clicked me!
+      `
+      });
+  section
+    h2 React Jade - Browserify
+    :javascript
+      var React = require('react');
+      module.exports = React.createClass({
+        onClick: function () { this.setState({clicked: true}) },
+        render: function () {
+          if (!this.state.clicked) {
+            return React.createElement('button', {
+              onClick: this.onClick
+            }, 'Click me!');
+          } else {
+            return React.createElement('p', {}, 'You clicked me!');
+          }
+        }
+      });
+  section
+    h2 Support ES6
+    ul
+      li.fragment character-parser
+      li.fragment constantinople
+      li.fragment with
+      li.fragment #[code Function] constructor
+    .fragment
+      h3 Next Steps
+      ul
+        li Use acorn rather than #[code Function] in lexer/parser to check code is a valid expression
+        li Add a plugin to support Babel (formally 6to5) before evaluating the template
+  +section-break('getting involved')
+  section
+    h2 Join the Team - open governance
+    ul
+      li Help add to current documentation
+      li Translate the docs to another language
+      li Review pull requests
+      li Help beginners by answering questions in the issue tracker
+      li Write your own fork like react-jade &amp; then-jade
+      li Build a jade linter

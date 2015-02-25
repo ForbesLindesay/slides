@@ -112,7 +112,10 @@ if (process.argv[2] === 'build') {
   var ecstatic = require('ecstatic');
   var serve = ecstatic({root: __dirname + '/output'});
   http.createServer(function (req, res) {
+    var start = Date.now();
     checkCompiled().done(function () {
+      var end = Date.now();
+      console.dir(end - start);
       serve(req, res);
     }, function (err) {
       console.error(err.stack || err.message || err);
