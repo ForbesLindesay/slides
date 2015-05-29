@@ -5,139 +5,6 @@ block title
 
 block slides
   +title-slide('GitHub Automation')
-  section
-    h2 GitHub Real Names
-    img(src="/github-automation/real-names.webp")
-    p https://github.com/ForbesLindesay/github-real-names
-  section
-    h2 REST API
-    p https://developer.github.com
-    p https://api.github.com
-    p Some requests return "404 Not Found" when they should return "403 Forbidden"
-  section
-    img(src="/github-automation/personal-access-tokens.png")
-  section
-    img(src="/github-automation/personal-access-token-new.png")
-  section
-    h2 Authentication - OAuth2
-    :javascript
-      var github = require('github-basic');
-      var client = github({
-        version: 3,
-        auth: '<MY-OAUTH-TOKEN>',
-        sync: true
-      });
-  section
-    h2 Making a Commit
-    div(style="font-size: 0.7em;")
-      :javascript
-        function commit(owner, repo, branch, commit, opts) {
-          var message = commit.message;
-          var updates = commit.updates;
-          // => [{path: 'string', content: 'string'}, ...]
-          var force = opts.force || false;
-
-          var head = client.get('/repos/:owner/:repo/git/refs/:ref',
-            {owner: owner, repo: repo, ref: 'heads/' + branch});
-          var shaLatestCommit = head.object.sha;
-
-          var commit = client.get('/repos/:owner/:repo/git/commits/:sha',
-            {owner: owner, repo: repo, sha: shaLatestCommit});
-          var shaBaseTree = commit.tree.sha;
-
-          var newTree = client.post('/repos/:owner/:repo/git/trees',
-            {owner: owner, repo: repo, tree: updates, base_tree: shaBaseTree});
-          var shaNewTree = newTree.sha;
-
-          var newCommit = client.post('/repos/:owner/:repo/git/commits',
-            {owner: owner, repo: repo, message: message, tree: shaNewTree, parents: [shaLatestCommit]});
-          var shaNewCommit = newCommit.sha;
-
-          client.patch('/repos/:owner/:repo/git/refs/:ref',
-            {owner: owner, repo: repo, ref: 'heads/' + branch, sha: shaNewCommit, force: force});
-        }
-  section
-    h2 Demo Time
-    video(controls preload="none" musted width="533px" height="400px" src="/github-automation/demo.mp4")
-  +section-break('Bot')
-  section
-    h2 Jade
-    p before
-    pre: code: span.cm-meta !!! 5
-    p after
-    :jade
-      doctype html
-    p Several angry people: https://github.com/visionmedia/jade/pull/1374
-  section
-    h2 Jade - fixup-doctype.js
-    :javascript
-      module.exports = function (text) {
-        return text
-          .replace(/^\s*\!\!\!\n/g, '!!! 5\n')
-          .replace(/^\s*\!\!\! ([a-zA-Z0-9]+\s*\n)/g, 'doctype $1')
-          .replace(/^\s*doctype 5(\s*\n)/g, 'doctype html$1');
-      };
-  section
-    h2 Jade - fix repo
-    div
-      :javascript
-        var github = require('github-basic');
-        var GitHubBot = require('github-bot');
-        var fixDoctype = require('./fix-doctype.js');
-
-        var GITHUB_TOKEN = '<GITHUB-TOKEN>';
-
-        var client = github({version: 3, auth: GITHUB_TOKEN, sync: true});
-        var bot = new GitHubBot(GITHUB_TOKEN, 'store', processRepo);
-        bot.run('visionmedia', 'jade').done();
-
-        var TITLE = 'Change doctype from using !!! 5' +
-                    ' style to doctype html';
-        var BODY = 'Jade has removed support for `!!!`' +
-                   ' as a shorthand for writing `doctype`' +
-                   ' and `5` as a shorthand for writing' +
-                   ' `html`.  This automated pull request' +
-                   ' updates the doctypes in your repository.';
-
-        function processRepo(owner, repo, branch, files) {
-          // files is an array of
-          // {
-          //   path: 'path/to/file.js',
-          //   name: 'file.js',
-          //   data: Buffer(body of file),
-          //   text: 'body of file'
-          // }
-          files = files.filter(function (file) {
-            return /\.jade$/.test(file.name);
-          });
-          if (files.length === 0) return;
-          var results = files.map(function (file) {
-            return {
-              path: file.path,
-              content: fixDoctype(file.text)
-            };
-          });
-          results = results.filter(function (result, index) {
-            return result.content !== files[index].text;
-          });
-          if (results.length === 0) return;
-          client.fork(owner, repo, {organization: 'jade-bot-1'});
-          client.branch('jade-bot-1', repo, branch, 'fix-doctype');
-          client.commit('jade-bot-1', repo, {
-            branch: 'fix-doctype',
-            message: 'Fix use of deprecated jade features and update jade',
-            updates: results
-          });
-          var res = client.pull(
-            {user: 'jade-bot-1', repo: repo,branch: 'fix-doctype'},
-            {user: owner, repo: repo, branch: branch},
-            {title: TITLE, body: BODY});
-          console.log(res._links.html.href);
-        }
-  section
-    img(src="/github-automation/merged-request.png")
-  section
-    img(src="/github-automation/closed-request.png")
   +section-break('esdicuss.org')
   section
     h2 Before
@@ -245,7 +112,195 @@ block slides
       li Fast to load pages
       li Many posts per page
       li Support for editing
+  +section-break('Using the GitHub API')
+  section
+    h2 REST API
+    p https://developer.github.com
+    p https://api.github.com
+    p Some requests return "404 Not Found" when they should return "403 Forbidden"
+  section
+    img(src="/github-automation/personal-access-tokens.png")
+  section
+    img(src="/github-automation/personal-access-token-new.png")
+  section
+    h2 Authentication - OAuth2
+    :javascript
+      var github = require('github-basic');
+      var client = github({
+        version: 3,
+        auth: '<MY-OAUTH-TOKEN>',
+        sync: true
+      });
+      client.get(path, query)
+      client.delete(path, query)
+      client.post(path, query)
+      client.patch(path, query)
+      client.put(path, query)
+  section
+    h2 Making a Commit
+    div(style="font-size: 0.7em;")
+      :javascript
+        function commit(owner, repo, branch, commit, opts) {
+          var message = commit.message;
+          var updates = commit.updates;
+          // => [{path: 'string', content: 'string'}, ...]
+          var force = opts.force || false;
+
+          var head = client.get('/repos/:owner/:repo/git/refs/:ref',
+            {owner: owner, repo: repo, ref: 'heads/' + branch});
+          var shaLatestCommit = head.object.sha;
+
+          var commit = client.get('/repos/:owner/:repo/git/commits/:sha',
+            {owner: owner, repo: repo, sha: shaLatestCommit});
+          var shaBaseTree = commit.tree.sha;
+
+          var newTree = client.post('/repos/:owner/:repo/git/trees',
+            {owner: owner, repo: repo, tree: updates, base_tree: shaBaseTree});
+          var shaNewTree = newTree.sha;
+
+          var newCommit = client.post('/repos/:owner/:repo/git/commits',
+            {owner: owner, repo: repo, message: message, tree: shaNewTree, parents: [shaLatestCommit]});
+          var shaNewCommit = newCommit.sha;
+
+          client.patch('/repos/:owner/:repo/git/refs/:ref',
+            {owner: owner, repo: repo, ref: 'heads/' + branch, sha: shaNewCommit, force: force});
+        }
+  section
+    p Or you can just use #[code client.commit]
+  section
+    h2 Demo Time
+    video(controls preload="none" musted width="533px" height="400px" src="/github-automation/demo.mp4")
+  +section-break('Jade')
+  section
+    h2 Jade
+    p before
+    pre: code: span.cm-meta !!! 5
+    p after
+    :jade
+      doctype html
+    p Several angry people: https://github.com/visionmedia/jade/pull/1374
+  section
+    h2 Jade - fixup-doctype.js
+    :javascript
+      module.exports = function (text) {
+        return text
+          .replace(/^\s*\!\!\!\n/g, '!!! 5\n')
+          .replace(/^\s*\!\!\! ([a-zA-Z0-9]+\s*\n)/g, 'doctype $1')
+          .replace(/^\s*doctype 5(\s*\n)/g, 'doctype html$1');
+      };
+  section
+    h2 Jade - fix repo
+    div
+      :javascript
+        var github = require('github-basic');
+        var GitHubBot = require('github-bot');
+        var fixDoctype = require('./fix-doctype.js');
+
+        var GITHUB_TOKEN = '<GITHUB-TOKEN>';
+
+        var client = github({version: 3, auth: GITHUB_TOKEN, sync: true});
+        var bot = new GitHubBot(GITHUB_TOKEN, 'store', processRepo);
+        bot.run('visionmedia', 'jade').done();
+
+        var TITLE = 'Change doctype from using !!! 5' +
+                    ' style to doctype html';
+        var BODY = 'Jade has removed support for `!!!`' +
+                   ' as a shorthand for writing `doctype`' +
+                   ' and `5` as a shorthand for writing' +
+                   ' `html`.  This automated pull request' +
+                   ' updates the doctypes in your repository.';
+
+        function processRepo(owner, repo, branch, files) {
+          // files is an array of
+          // {
+          //   path: 'path/to/file.js',
+          //   name: 'file.js',
+          //   data: Buffer(body of file),
+          //   text: 'body of file'
+          // }
+          files = files.filter(function (file) {
+            return /\.jade$/.test(file.name);
+          });
+          if (files.length === 0) return;
+          var results = files.map(function (file) {
+            return {
+              path: file.path,
+              content: fixDoctype(file.text)
+            };
+          });
+          results = results.filter(function (result, index) {
+            return result.content !== files[index].text;
+          });
+          if (results.length === 0) return;
+          client.fork(owner, repo, {organization: 'jade-bot-1'});
+          client.branch('jade-bot-1', repo, branch, 'fix-doctype');
+          client.commit('jade-bot-1', repo, {
+            branch: 'fix-doctype',
+            message: 'Fix use of deprecated jade features and update jade',
+            updates: results
+          });
+          var res = client.pull(
+            {user: 'jade-bot-1', repo: repo,branch: 'fix-doctype'},
+            {user: owner, repo: repo, branch: branch},
+            {title: TITLE, body: BODY});
+          console.log(res._links.html.href);
+        }
+  section
+    img(src="/github-automation/merged-request.png")
+  section
+    img(src="/github-automation/closed-request.png")
+  +section-break('Regenerator Runtime')
+  section
+    :javascript
+      function* integers(max, step) {
+        var i;
+        while (true) {
+          i++;
+          yield i;
+        }
+      }
+  section
+    :javascript
+      var marked0$0 = [integers].map(regeneratorRuntime.mark);
+      function integers(max, step) {
+        var i;
+
+        return regeneratorRuntime.wrap(function integers$(context$1$0) {
+          while (1) switch (context$1$0.prev = context$1$0.next) {
+          case 0:
+            if (!true) {
+              context$1$0.next = 6;
+              break;
+            }
+
+            i++;
+            context$1$0.next = 4;
+            return i;
+          case 4:
+            context$1$0.next = 0;
+            break;
+          case 6:
+          case "end":
+            return context$1$0.stop();
+          }
+        }, marked0$0[0], this);
+      }
+  section
+    :javascript
+      require('regenerator/runtime');
+    .fragment
+      :javascript
+        var regeneratorRuntime = require('regenerator-runtime-only');
+  section
+    h2 How do I keep it up to date?
+    p.fragment Write a bot!
+  section
+    img(src="/github-automation/regenerator-runtime-only.png")
   +section-break('Other Ideas')
+  section
+    h2 GitHub Real Names
+    img(src="/github-automation/real-names.webp")
+    p https://github.com/ForbesLindesay/github-real-names
   section
     h2 Open Source Report Card
     img(src="/github-automation/report-card.png")
@@ -256,31 +311,17 @@ block slides
     h2 HuBoard
     img(src="/github-automation/huboard.gif")
   section
-    h2 Personal Issue Task List
-    ul
-      li Oldest first
-      li Ability to create and save filters
-      li Can be responded to:
-        ul
-          li Permanently mute/close
-          li Hide for a day
-          li Hide for a week
-          li Hide for a month
-          li Hide until someone else comments
-  section
-    h2 Automatic New Version Publisher
-    p http://cdnjs.com/
-    p Accepts submissions of updated libraries via pull-requests
-    p Has recently moved to a (better) npm based model
-  section
-    h2 Automatically patch security vulnerabilities
-    ol
-      li Read security issue on https://nodesecurity.io/
-      li Find all libaries that depend on broken module
-      li Submit pull requests to update the version in package.json
-  section
     h2 Build More Bots
     ul
       li Fix deprecated features
-      li Hunt for likely error such as undefined variables
+      li Better issue trackers
       li Close issues that haven't been touched in years
+      li Hunt for likely error such as undefined variables
+      li
+        | Automatically patch security vulnerabilities
+        br
+        | (read from https://nodesecurity.io/ then submit pull requests to update versions)
+      li Automatic version number management: peer dependencies
+  section
+    h2 Join Me!
+    img(src="/github-automation/scriptit.png" width="500px" height="337px")
