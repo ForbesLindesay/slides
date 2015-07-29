@@ -3,11 +3,11 @@ extends ./base.jade
 block content
   mixin bad()
     li&attributes(attributes)
-      i.icon-remove
+      i.fa.fa-li.fa-times
       block
   mixin good()
     li&attributes(attributes)
-      i.icon-ok
+      i.fa.fa-li.fa-check
       block
   mixin section-break(title)
     section.section-break-slide(data-state="section-break")

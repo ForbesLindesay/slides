@@ -80,7 +80,7 @@ block slides
           callback(null, JSON.parse(res))
         })
       }
-    ul.icons-ul
+    ul.fa-ul
       +bad.fragment Conflates the input with the output
       +bad.fragment Doesn't work with control flow primatives
       +bad.fragment Doesnt handle errors
@@ -97,7 +97,7 @@ block slides
           }
         })
       }
-    ul.icons-ul
+    ul.fa-ul
       +bad.fragment Conflates the input with the output
       +bad.fragment Doesn't work with control flow primatives
       +good.fragment handles errors in <code>JSON.parse</code>
@@ -136,7 +136,7 @@ block slides
           callback(null, res)
         })
       }
-    ul.icons-ul
+    ul.fa-ul
       +bad.fragment Conflates the input with the output
       +bad.fragment Doesn't work with control flow primatives
       +good.fragment But it does handle errors
@@ -179,7 +179,7 @@ block slides
           }, reject)
         })
       }
-    ul.icons-ul
+    ul.fa-ul
       +good.fragment Doesn't conflate input with output
       +bad.fragment Doesn't work with control flow primatives
       +bad.fragment Requires extra work to handle errors
@@ -200,7 +200,7 @@ block slides
         function readJSON(filename){
           return readFile(filename, 'utf8').then(JSON.parse)
         }
-    ul.icons-ul
+    ul.fa-ul
       +good.fragment Doesn't conflate input with output
       +bad.fragment Doesn't work with control flow primatives
       +good.fragment Handles errors
@@ -233,7 +233,7 @@ block slides
         var readJSON = async(function *(filename){
           return JSON.parse(yield readFile(filename, 'utf8'))
         })
-    ul.icons-ul
+    ul.fa-ul
       +good.fragment Doesn't conflate input with output
       +good.fragment Works with control flow primatives
       +good.fragment Handles errors
@@ -364,7 +364,7 @@ block slides
       function readJSON(filename, _){
         return JSON.parse(fs.readFile(filename, 'utf8', _))
       }
-    ul.icons-ul
+    ul.fa-ul
       +good.fragment Works with control flow primatives
       +good.fragment Handles errors
       +bad.fragment Conflates input with output
@@ -377,7 +377,7 @@ block slides
         suspend(function *(resume){
           return JSON.parse(yield fs.readFile(filename, 'utf8', resume))
         })
-    ul.icons-ul
+    ul.fa-ul
       +good.fragment Works with control flow primatives
       +good.fragment Handles errors
       +bad.fragment Conflates input with output
@@ -394,7 +394,7 @@ block slides
       co(function *(){
         return JSON.parse(yield readFile(filename, 'utf8'))
       })
-    ul.icons-ul
+    ul.fa-ul
       +good.fragment Works with control flow primatives
       +good.fragment Handles errors
       +bad.fragment Can't do parallel operation
